@@ -229,7 +229,8 @@ edge.get('/eligible', async (req: Request, res: Response) => {
             if (html.length > 600000) html = html.slice(0,600000); // truncate huge SPA bundles
             fetchAttempts.push({ ua: ua1, ok: true, bytes: html.length });
           } catch (e:any) {
-            fetchAttempts.push({ ua: 'JenniTryGo/1.0', ok: false, err: e?.message });
+            const status = e?.response?.status;
+            fetchAttempts.push({ ua: 'JenniTryGo/1.0', ok: false, err: e?.message, ...(status?{status}: {}) });
           }
           // Fallback attempt if first failed or produced suspiciously small HTML
           if (!html || html.length < 400) {
@@ -241,11 +242,18 @@ edge.get('/eligible', async (req: Request, res: Response) => {
               if (h2.length > html.length) html = h2;
               fetchAttempts.push({ ua: 'ChromeLike', ok: true, bytes: h2.length });
             } catch (e:any) {
-              fetchAttempts.push({ ua: 'ChromeLike', ok: false, err: e?.message });
+              const status = e?.response?.status;
+              fetchAttempts.push({ ua: 'ChromeLike', ok: false, err: e?.message, ...(status?{status}: {}) });
             }
           }
           if (!html) {
-            return res.status(200).json({ eligible: false, error: 'fetch_failed', detail: fetchAttempts, debug });
+            // Classify common upstream failure patterns for clearer UX
+            const codes = fetchAttempts.map(a => (a as any).status || (/(status code|ECONN|ENOTFOUND|ETIMEDOUT|403|404)/i.test(String(a.err)) ? a.err : null));
+            const all403 = fetchAttempts.length && fetchAttempts.every(a => /403/.test(String((a as any).status || a.err)));
+            const all404 = fetchAttempts.length && fetchAttempts.every(a => /404/.test(String((a as any).status || a.err)));
+            const timeoutLikely = fetchAttempts.some(a => /timeout|ETIMEDOUT/i.test(String(a.err)));
+            const error = all403 ? 'blocked_403' : (all404 ? 'upstream_404' : (timeoutLikely ? 'fetch_timeout' : 'fetch_failed'));
+            return res.status(200).json({ eligible: false, error, detail: fetchAttempts, debug });
           }
           const fingerprint = parseProductHtml(html, safeUrl.toString());
           // URL-derived style code fallback (e.g., IF1673-103) if missing
