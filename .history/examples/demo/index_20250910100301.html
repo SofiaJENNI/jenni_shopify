@@ -23,8 +23,7 @@
     .btn-light{background:#f9fafb;color:#111;border-color:#e5e7eb}
     .small{font-size:12px}
     .install-btn{background:#10b981;color:#fff;border-color:#10b981;transition:all 0.2s ease}
-    .install-btn:hover:not(:disabled){background:#059669;border-color:#059669}
-    .install-btn:disabled{background:#9ca3af;border-color:#9ca3af;cursor:not-allowed}
+    .install-btn:hover{background:#059669;border-color:#059669}
     .install-status{padding:8px;border-radius:6px;margin-top:8px;font-size:11px;line-height:1.4}
     .install-status.success{background:#ecfdf5;border:1px solid #a7f3d0;color:#065f46}
     .install-status.info{background:#eff6ff;border:1px solid #bfdbfe;color:#1e40af}
@@ -128,12 +127,12 @@
 
       // Bookmarklet code using current origin; honors Auto-open and Position
       function buildBookmarklet(autoOpen, position){
-    const T = origin; // tunnel or local origin
-    const pos = String(position||'bottom-right');
-    const init = "(window.JenniEdge||{init:function(){}}).init({tenant:'demo',zip:prompt('ZIP','10001')||'10001',apiBase:T+'/edge',position:"+JSON.stringify(pos)+",autoOpenPanel:"+JSON.stringify(!!autoOpen)+"})";
-    const open = autoOpen ? ";function o(){try{if(window.JenniEdge&&window.JenniEdge.openPanel){window.JenniEdge.openPanel()}else{setTimeout(o,150)}}catch(e){setTimeout(o,150)}}o();" : "";
-    return "javascript:(function(){var T="+JSON.stringify(T)+";var s=document.createElement('script');s.src=T+'/edge/client.js';s.defer=true;document.head.appendChild(s);s.onload=function(){try{"+init+open+"}catch(e){alert('JenniEdge init failed')}})();";
-}
+        const T = origin; // tunnel or local origin
+        const pos = String(position||'bottom-right');
+        const init = ",(window.JenniEdge||{init:function(){}}).init({tenant:'demo',zip:prompt('ZIP','10001')||'10001',apiBase:T+'/edge',position:"+JSON.stringify(pos)+",autoOpenPanel:"+JSON.stringify(!!autoOpen)+"})";
+        const open = autoOpen ? ";function o(){try{if(window.JenniEdge&&window.JenniEdge.openPanel){window.JenniEdge.openPanel()}else{setTimeout(o,150)}}catch(e){setTimeout(o,150)}}o();" : "";
+        return "javascript:(function(){var T="+JSON.stringify(T)+";var s=document.createElement('script');s.src=T+'/edge/client.js';s.defer=true;document.head.appendChild(s);s.onload=function(){try"+init+open+"}catch(e){alert('JenniEdge init failed')}})();";
+      }
       function refreshBookmarklet(){
         const autoOpen = !!document.getElementById('autoOpen').checked;
         const position = (document.getElementById('pos').value || 'bottom-right');
@@ -245,10 +244,6 @@
         } catch (error) {
           statusEl.className = 'install-status error';
           statusEl.innerHTML = `❌ Installation failed: ${error.message}`;
-        } finally {
-          // Reset button state
-          installBtn.textContent = originalText;
-          installBtn.disabled = false;
         }
       };
 

@@ -23,8 +23,7 @@
     .btn-light{background:#f9fafb;color:#111;border-color:#e5e7eb}
     .small{font-size:12px}
     .install-btn{background:#10b981;color:#fff;border-color:#10b981;transition:all 0.2s ease}
-    .install-btn:hover:not(:disabled){background:#059669;border-color:#059669}
-    .install-btn:disabled{background:#9ca3af;border-color:#9ca3af;cursor:not-allowed}
+    .install-btn:hover{background:#059669;border-color:#059669}
     .install-status{padding:8px;border-radius:6px;margin-top:8px;font-size:11px;line-height:1.4}
     .install-status.success{background:#ecfdf5;border:1px solid #a7f3d0;color:#065f46}
     .install-status.info{background:#eff6ff;border:1px solid #bfdbfe;color:#1e40af}
@@ -65,9 +64,9 @@
           <div style="display:flex;gap:8px;margin:10px 0;align-items:center;flex-wrap:wrap">
             <a id="bmLink" class="btn btn-light" href="#" draggable="true" style="text-decoration:none;padding:8px 12px;border:1px solid #e5e7eb;border-radius:8px;background:#f3f4f6;color:#111">JENNi Overlay</a>
             <button id="copyBm" class="btn-light">Copy Code</button>
-            <button id="installBm" class="install-btn">Auto-Install</button>
+            <button id="installBm" class="btn-light" style="background:#10b981;color:#fff;border-color:#10b981">Auto-Install</button>
           </div>
-          <div id="installStatus" class="install-status" style="display:none"></div>
+          <div id="installStatus" class="small muted" style="margin-top:8px"></div>
           <pre id="bmCode" class="small"><code></code></pre>
         </div>
       </div>
@@ -128,12 +127,12 @@
 
       // Bookmarklet code using current origin; honors Auto-open and Position
       function buildBookmarklet(autoOpen, position){
-    const T = origin; // tunnel or local origin
-    const pos = String(position||'bottom-right');
-    const init = "(window.JenniEdge||{init:function(){}}).init({tenant:'demo',zip:prompt('ZIP','10001')||'10001',apiBase:T+'/edge',position:"+JSON.stringify(pos)+",autoOpenPanel:"+JSON.stringify(!!autoOpen)+"})";
-    const open = autoOpen ? ";function o(){try{if(window.JenniEdge&&window.JenniEdge.openPanel){window.JenniEdge.openPanel()}else{setTimeout(o,150)}}catch(e){setTimeout(o,150)}}o();" : "";
-    return "javascript:(function(){var T="+JSON.stringify(T)+";var s=document.createElement('script');s.src=T+'/edge/client.js';s.defer=true;document.head.appendChild(s);s.onload=function(){try{"+init+open+"}catch(e){alert('JenniEdge init failed')}})();";
-}
+        const T = origin; // tunnel or local origin
+        const pos = String(position||'bottom-right');
+        const init = ",(window.JenniEdge||{init:function(){}}).init({tenant:'demo',zip:prompt('ZIP','10001')||'10001',apiBase:T+'/edge',position:"+JSON.stringify(pos)+",autoOpenPanel:"+JSON.stringify(!!autoOpen)+"})";
+        const open = autoOpen ? ";function o(){try{if(window.JenniEdge&&window.JenniEdge.openPanel){window.JenniEdge.openPanel()}else{setTimeout(o,150)}}catch(e){setTimeout(o,150)}}o();" : "";
+        return "javascript:(function(){var T="+JSON.stringify(T)+";var s=document.createElement('script');s.src=T+'/edge/client.js';s.defer=true;document.head.appendChild(s);s.onload=function(){try"+init+open+"}catch(e){alert('JenniEdge init failed')}})();";
+      }
       function refreshBookmarklet(){
         const autoOpen = !!document.getElementById('autoOpen').checked;
         const position = (document.getElementById('pos').value || 'bottom-right');
@@ -150,21 +149,10 @@
 
       // Auto-install bookmarklet functionality
       document.getElementById('installBm').onclick = async () => {
-        const installBtn = document.getElementById('installBm');
         const autoOpen = !!document.getElementById('autoOpen').checked;
         const position = (document.getElementById('pos').value || 'bottom-right');
         const bm = buildBookmarklet(autoOpen, position);
         const statusEl = document.getElementById('installStatus');
-        
-        // Show loading state
-        const originalText = installBtn.textContent;
-        installBtn.textContent = 'Installing...';
-        installBtn.disabled = true;
-        
-        // Show status area
-        statusEl.style.display = 'block';
-        statusEl.className = 'install-status info';
-        statusEl.innerHTML = '🔄 Detecting browser and attempting installation...';
         
         try {
           // Detect browser
@@ -181,8 +169,7 @@
                   title: 'JENNi Overlay',
                   url: bm
                 });
-                statusEl.className = 'install-status success';
-                statusEl.innerHTML = '✅ Bookmarklet installed successfully!<br><small>You can now use it on any website.</small>';
+                statusEl.innerHTML = '<span class="ok">✅ Bookmarklet installed successfully!</span>';
                 return;
               } catch (e) {
                 console.log('Chrome bookmarks API not available, falling back to manual method');
@@ -190,32 +177,39 @@
             }
             
             // Fallback: Show instructions for Chrome
-            statusEl.className = 'install-status info';
             statusEl.innerHTML = `
-              <strong>Chrome/Edge Installation:</strong><br>
-              <div style="margin-top:6px;">
+              <span class="err">Chrome requires manual installation:</span><br>
+              <div style="margin-top:8px;padding:8px;background:#f8f9fa;border-radius:4px;font-size:11px;">
                 1. Right-click the "JENNi Overlay" button above<br>
                 2. Select "Bookmark this link"<br>
                 3. Or drag the button to your bookmarks bar
               </div>
             `;
           } else if (isSafari) {
-            // Safari: Show Safari-specific instructions
-            statusEl.className = 'install-status info';
-            statusEl.innerHTML = `
-              <strong>Safari Installation:</strong><br>
-              <div style="margin-top:6px;">
-                1. Drag the "JENNi Overlay" button to your bookmarks bar<br>
-                2. Or right-click → "Add to Reading List" → then move to bookmarks<br>
-                3. Make sure bookmarks bar is visible (View → Show Bookmarks Bar)
-              </div>
-            `;
+            // Safari: Use Safari-specific bookmark creation
+            try {
+              // Try to use Safari's bookmark API if available
+              if (typeof safari !== 'undefined' && safari.self && safari.self.tab) {
+                // This would require a Safari extension
+                statusEl.innerHTML = '<span class="err">Safari requires manual installation. Drag the "JENNi Overlay" button to your bookmarks bar.</span>';
+              } else {
+                // Show Safari-specific instructions
+                statusEl.innerHTML = `
+                  <span class="err">Safari installation:</span><br>
+                  <div style="margin-top:8px;padding:8px;background:#f8f9fa;border-radius:4px;font-size:11px;">
+                    1. Drag the "JENNi Overlay" button to your bookmarks bar<br>
+                    2. Or right-click → "Add to Reading List" → then move to bookmarks
+                  </div>
+                `;
+              }
+            } catch (e) {
+              statusEl.innerHTML = '<span class="err">Safari requires manual installation. Drag the "JENNi Overlay" button to your bookmarks bar.</span>';
+            }
           } else if (isFirefox) {
             // Firefox: Show instructions
-            statusEl.className = 'install-status info';
             statusEl.innerHTML = `
-              <strong>Firefox Installation:</strong><br>
-              <div style="margin-top:6px;">
+              <span class="err">Firefox installation:</span><br>
+              <div style="margin-top:8px;padding:8px;background:#f8f9fa;border-radius:4px;font-size:11px;">
                 1. Right-click the "JENNi Overlay" button above<br>
                 2. Select "Bookmark This Link"<br>
                 3. Or drag the button to your bookmarks toolbar
@@ -223,10 +217,9 @@
             `;
           } else {
             // Generic fallback
-            statusEl.className = 'install-status info';
             statusEl.innerHTML = `
-              <strong>Manual Installation Required:</strong><br>
-              <div style="margin-top:6px;">
+              <span class="err">Manual installation required:</span><br>
+              <div style="margin-top:8px;padding:8px;background:#f8f9fa;border-radius:4px;font-size:11px;">
                 1. Right-click the "JENNi Overlay" button above<br>
                 2. Select "Bookmark This Link" or "Add to Bookmarks"<br>
                 3. Or drag the button to your bookmarks bar
@@ -237,18 +230,13 @@
           // Auto-copy to clipboard as backup
           try {
             await navigator.clipboard.writeText(bm);
-            statusEl.innerHTML += '<br><br>📋 <strong>Backup:</strong> Bookmarklet code copied to clipboard';
+            statusEl.innerHTML += '<br><span class="ok">📋 Bookmarklet code copied to clipboard as backup</span>';
           } catch (e) {
             console.log('Clipboard copy failed:', e);
           }
           
         } catch (error) {
-          statusEl.className = 'install-status error';
-          statusEl.innerHTML = `❌ Installation failed: ${error.message}`;
-        } finally {
-          // Reset button state
-          installBtn.textContent = originalText;
-          installBtn.disabled = false;
+          statusEl.innerHTML = `<span class="err">Installation failed: ${error.message}</span>`;
         }
       };
 
