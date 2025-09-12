@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nike Air Max 270 - Test Product</title>
+    
+    <!-- Enhanced product metadata for testing -->
+    <meta property="og:title" content="Nike Air Max 270 React Black White">
+    <meta property="product:brand" content="Nike">
+    <meta property="product:price:amount" content="150.00">
+    <meta name="product:sku" content="AO4971-001">
+    <meta name="product:upc" content="888507417893">
+    
+    <!-- Schema.org microdata -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org/",
+      "@type": "Product",
+      "name": "Nike Air Max 270 React Black White",
+      "brand": {
+        "@type": "Brand",
+        "name": "Nike"
+      },
+      "sku": "AO4971-001",
+      "gtin13": "0888507417893",
+      "offers": {
+        "@type": "Offer",
+        "price": "150.00",
+        "priceCurrency": "USD",
+        "availability": "https://schema.org/InStock"
+      }
+    }
+    </script>
+    
+    <style>
+        body { font-family: system-ui, -apple-system, sans-serif; margin: 0; padding: 20px; background: #f8fafc; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .product-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-top: 20px; }
+        .product-image { background: white; border-radius: 12px; padding: 20px; text-align: center; }
+        .product-info { background: white; border-radius: 12px; padding: 20px; }
+        .product-title { font-size: 24px; font-weight: 700; margin-bottom: 8px; }
+        .product-brand { color: #6b7280; font-size: 14px; margin-bottom: 16px; }
+        .price { font-size: 28px; font-weight: 700; color: #16a34a; margin-bottom: 20px; }
+        .product-details { margin: 20px 0; }
+        .detail-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #f1f5f9; }
+        .variant-selector { margin: 20px 0; }
+        .variant-selector label { display: block; margin-bottom: 8px; font-weight: 600; }
+        .variant-options { display: flex; gap: 8px; }
+        .variant-option { padding: 8px 16px; border: 2px solid #e5e7eb; border-radius: 8px; cursor: pointer; }
+        .variant-option.selected { border-color: #3b82f6; background: #eff6ff; }
+        .cta-button { width: 100%; padding: 16px; background: #111827; color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer; margin-top: 20px; }
+        .test-info { background: #fef3c7; border: 1px solid #f59e0b; border-radius: 8px; padding: 16px; margin-bottom: 20px; }
+        .test-info h3 { margin: 0 0 8px 0; color: #92400e; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="test-info">
+            <h3>🧪 Fingerprint Testing Page</h3>
+            <p>This page contains rich product metadata to test the enhanced fingerprinting system. Click the 🔍 button in the JENNi panel to see extracted data.</p>
+        </div>
+        
+        <div class="product-grid">
+            <div class="product-image">
+                <div style="width: 300px; height: 300px; background: #f3f4f6; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #6b7280; margin: 0 auto;">
+                    Product Image Placeholder
+                </div>
+            </div>
+            
+            <div class="product-info">
+                <div class="product-brand" itemprop="brand">Nike</div>
+                <h1 class="product-title" itemprop="name">Air Max 270 React Black White</h1>
+                <div class="price" itemprop="price" data-price="150.00">$150.00</div>
+                
+                <div class="product-details">
+                    <div class="detail-row">
+                        <span>SKU:</span>
+                        <span class="sku" itemprop="sku" data-sku="AO4971-001">AO4971-001</span>
+                    </div>
+                    <div class="detail-row">
+                        <span>Style Code:</span>
+                        <span class="style-code" data-style="AO4971-001">AO4971-001</span>
+                    </div>
+                    <div class="detail-row">
+                        <span>UPC:</span>
+                        <span class="barcode" data-gtin="0888507417893">0888507417893</span>
+                    </div>
+                </div>
+                
+                <div class="variant-selector">
+                    <label>Size:</label>
+                    <div class="variant-options">
+                        <div class="variant-option" data-size="8">8</div>
+                        <div class="variant-option selected" data-size="9">9</div>
+                        <div class="variant-option" data-size="10">10</div>
+                        <div class="variant-option" data-size="11">11</div>
+                    </div>
+                    <input type="hidden" name="size" value="9">
+                </div>
+                
+                <div class="variant-selector">
+                    <label>Color:</label>
+                    <div class="variant-options">
+                        <div class="variant-option selected" data-color="Black/White">Black/White</div>
+                        <div class="variant-option" data-color="White/Black">White/Black</div>
+                    </div>
+                    <input type="hidden" name="color" value="Black/White">
+                </div>
+                
+                <button class="cta-button">Add to Cart</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Simulate variant selection behavior
+        document.querySelectorAll('.variant-option').forEach(option => {
+            option.addEventListener('click', function() {
+                // Remove selected from siblings
+                this.parentNode.querySelectorAll('.variant-option').forEach(opt => opt.classList.remove('selected'));
+                // Add selected to clicked option
+                this.classList.add('selected');
+                
+                // Update hidden input if present
+                const input = this.parentNode.parentNode.querySelector('input[type="hidden"]');
+                if (input) {
+                    input.value = this.dataset.size || this.dataset.color;
+                }
+                
+                // Trigger custom event for JENNi overlay to detect variant change
+                window.dispatchEvent(new Event('jenni:product-change'));
+            });
+        });
+    </script>
+    
+    <!-- Load JENNi Edge for testing -->
+    <script>
+        // Auto-load JENNi for testing (assuming dev server running on localhost:4000)
+        if (location.hostname === 'localhost' || location.hostname === '127.0.0.1') {
+            const script = document.createElement('script');
+            script.src = 'http://localhost:4000/edge/embed.js';
+            script.setAttribute('data-jenni-tenant', 'demo');
+            script.setAttribute('data-jenni-zip', '10001');
+            script.setAttribute('data-jenni-open', '1');
+            script.async = true;
+            document.head.appendChild(script);
+        }
+    </script>
+</body>
+</html>

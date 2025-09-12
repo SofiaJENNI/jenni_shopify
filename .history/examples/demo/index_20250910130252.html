@@ -127,17 +127,15 @@
       };
 
       // Bookmarklet code using current origin; honors Auto-open and Position
-function buildBookmarklet(autoOpen, position){
+      function buildBookmarklet(autoOpen, position){
     const T = origin;
     const pos = String(position||'bottom-right');
     const init = "(window.JenniEdge||{init:function(){}}).init({tenant:'demo',zip:prompt('ZIP','10001')||'10001',apiBase:T+'/edge',position:"+JSON.stringify(pos)+",autoOpenPanel:"+JSON.stringify(!!autoOpen)+"})";
     const open = autoOpen ? ";function o(){try{if(window.JenniEdge&&window.JenniEdge.openPanel){window.JenniEdge.openPanel()}else{setTimeout(o,150)}}catch(e){setTimeout(o,150)}}o();" : "";
-    // return "javascript:(function(){var T="+JSON.stringify(T)+";var s=document.createElement('script');s.src=T+'/edge/client.js';s.defer=true;document.head.appendChild(s);s.onload=function(){try{"+init+";"+open+"}catch(e){alert('JenniEdge init failed')}})();";
-    return "javascript:(function(){    var T=\"http://localhost:4000\";    var s=document.createElement('script');    s.src=T+'/edge/client.js';    s.defer=true;    document.head.appendChild(s);    s.onload=function(){        try {            (window.JenniEdge||{init:function(){}}).init({                tenant:'demo',                zip:prompt('ZIP','10001')||'10001',                apiBase:T+'/edge',                position:\"bottom-right\",                autoOpenPanel:true            });            function o(){                try{                    if(window.JenniEdge&&window.JenniEdge.openPanel){                        window.JenniEdge.openPanel()                    } else {                        setTimeout(o,150)                    }                } catch(e){                    setTimeout(o,150)                }            }            o();        } catch(e){            alert('JenniEdge init failed')        }    }})();";
+    return "javascript:(function(){var T="+JSON.stringify(T)+";var s=document.createElement('script');s.src=T+'/edge/client.js';s.defer=true;document.head.appendChild(s);s.onload=function(){try{"+init+";"+open+"}catch(e){alert('JenniEdge init failed')}})();";
+}
 
-  }
-
-
+javascript:(function(){    var T="http://localhost:4000";    var s=document.createElement('script');    s.src=T+'/edge/client.js';    s.defer=true;    document.head.appendChild(s);    s.onload=function(){        try {            (window.JenniEdge||{init:function(){}}).init({                tenant:'demo',                zip:prompt('ZIP','10001')||'10001',                apiBase:T+'/edge',                position:"bottom-right",                autoOpenPanel:true            });            function o(){                try{                    if(window.JenniEdge&&window.JenniEdge.openPanel){                        window.JenniEdge.openPanel()                    } else {                        setTimeout(o,150)                    }                } catch(e){                    setTimeout(o,150)                }            }            o();        } catch(e){            alert('JenniEdge init failed')        }    }})();
       function refreshBookmarklet(){
         const autoOpen = !!document.getElementById('autoOpen').checked;
         const position = (document.getElementById('pos').value || 'bottom-right');

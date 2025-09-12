@@ -16,7 +16,7 @@
       const bySelectors = (selectors, validator = null) => {
         for (const s of selectors) {
           try {
-          const el = document.querySelector(s);
+            const el = document.querySelector(s);
             if (!el) continue;
             
             let value = el.getAttribute('content') || el.getAttribute('value') || 
@@ -118,9 +118,9 @@
             if (!jsonText.trim()) continue;
             
             let json = JSON.parse(jsonText);
-          const arr = Array.isArray(json) ? json : [json];
+            const arr = Array.isArray(json) ? json : [json];
             
-          for (const node of arr) {
+            for (const node of arr) {
               this.extractFromJsonLdNode(node, ld);
             }
           } catch (e) {
@@ -330,7 +330,7 @@
             variantInfo.color = el.value || el.textContent || el.getAttribute('data-color');
             break;
           }
-      } catch {}
+        } catch {}
       }
       
       return Object.keys(variantInfo).length > 0 ? variantInfo : null;
@@ -542,7 +542,7 @@
         try { this.updatePanelContent(this.state.panelEl, data); } catch {}
       } else if (this.config.autoOpenPanel && !this.state.openedOnce) {
         this.state.openedOnce = true;
-        setTimeout(()=>this.openPanel(), 10);
+        setTimeout(()=>this.openPanel(), 50);
       }
 
       // Click the pill to open the detail panel
@@ -605,17 +605,15 @@
           <button class="jenni-edge-close" aria-label="Close">✕</button>
         </div>
         <div class="jenni-edge-body">
-        <div class="jenni-edge-node loading">Finding nearby stores…</div>
-        </div>
           <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px">
             <input aria-label="ZIP code" class="zip-input" placeholder="ZIP" value="${this.config.zip}" style="flex:0 0 90px;padding:8px 10px;border:1px solid #e5e7eb;border-radius:8px"/>
             <button class="zip-apply" style="padding:8px 10px;border-radius:8px;border:1px solid #e5e7eb;background:#f8fafc;cursor:pointer">Update</button>
-            <button class="fingerprint-toggle" style="padding:4px 8px;border-radius:6px;border:1px solid #e5e7eb;background:#f8fafc;cursor:pointer;font-size:11px;margin-left:auto">🔍</button>
+            <button class="fingerprint-toggle" style="padding:4px 8px;border-radius:6px;border:1px solid #e5e7eb;background:#f8fafc;cursor:pointer;font-size:50px;margin-left:auto">🔍</button>
           </div>
           <div class="jenni-edge-fingerprint" style="display:none;margin-bottom:8px;padding:8px;background:#f8fafc;border-radius:8px;border:1px solid #e5e7eb"></div>
           <div class="jenni-edge-formula"></div>
-
-
+          <div class="jenni-edge-node loading">Finding nearby stores…</div>
+        </div>
         <button class="jenni-edge-cta">${ctaText}</button>
         <div class="jenni-edge-foot">ZIP ${this.config.zip}</div>
       `;

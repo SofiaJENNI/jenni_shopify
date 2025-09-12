@@ -194,7 +194,7 @@ edge.post('/resolve', async (req: Request, res: Response) => {
 });
 
 edge.post('/export', (_req: Request, res: Response) => {
-  const snippet = `<script src="https://cdn.example.com/jenni/edge.js" defer></script>\n<script>JenniEdge.init({ tenant:'demo', zip:'10001', apiBase:'https://api.example.com/edge', debug: true })</script>`;
+  const snippet = `<script src="https://cdn.example.com/jenni/edge.js" defer></script>\n<script>JenniEdge.init({ tenant:'demo', zip:'10001', apiBase:'https://api.example.com/edge' })</script>`;
   res.json({ ok: true, snippet, templateUrl: 'https://cdn.example.com/jenni/gtm-template.json' });
 });
 

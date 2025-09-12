@@ -16,7 +16,7 @@
       const bySelectors = (selectors, validator = null) => {
         for (const s of selectors) {
           try {
-          const el = document.querySelector(s);
+            const el = document.querySelector(s);
             if (!el) continue;
             
             let value = el.getAttribute('content') || el.getAttribute('value') || 
@@ -118,9 +118,9 @@
             if (!jsonText.trim()) continue;
             
             let json = JSON.parse(jsonText);
-          const arr = Array.isArray(json) ? json : [json];
+            const arr = Array.isArray(json) ? json : [json];
             
-          for (const node of arr) {
+            for (const node of arr) {
               this.extractFromJsonLdNode(node, ld);
             }
           } catch (e) {
@@ -330,7 +330,7 @@
             variantInfo.color = el.value || el.textContent || el.getAttribute('data-color');
             break;
           }
-      } catch {}
+        } catch {}
       }
       
       return Object.keys(variantInfo).length > 0 ? variantInfo : null;
@@ -542,7 +542,7 @@
         try { this.updatePanelContent(this.state.panelEl, data); } catch {}
       } else if (this.config.autoOpenPanel && !this.state.openedOnce) {
         this.state.openedOnce = true;
-        setTimeout(()=>this.openPanel(), 10);
+        setTimeout(()=>this.openPanel(), 50);
       }
 
       // Click the pill to open the detail panel
@@ -605,17 +605,13 @@
           <button class="jenni-edge-close" aria-label="Close">✕</button>
         </div>
         <div class="jenni-edge-body">
-        <div class="jenni-edge-node loading">Finding nearby stores…</div>
-        </div>
           <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px">
             <input aria-label="ZIP code" class="zip-input" placeholder="ZIP" value="${this.config.zip}" style="flex:0 0 90px;padding:8px 10px;border:1px solid #e5e7eb;border-radius:8px"/>
             <button class="zip-apply" style="padding:8px 10px;border-radius:8px;border:1px solid #e5e7eb;background:#f8fafc;cursor:pointer">Update</button>
-            <button class="fingerprint-toggle" style="padding:4px 8px;border-radius:6px;border:1px solid #e5e7eb;background:#f8fafc;cursor:pointer;font-size:11px;margin-left:auto">🔍</button>
           </div>
-          <div class="jenni-edge-fingerprint" style="display:none;margin-bottom:8px;padding:8px;background:#f8fafc;border-radius:8px;border:1px solid #e5e7eb"></div>
           <div class="jenni-edge-formula"></div>
-
-
+          <div class="jenni-edge-node loading">Finding nearby stores…</div>
+        </div>
         <button class="jenni-edge-cta">${ctaText}</button>
         <div class="jenni-edge-foot">ZIP ${this.config.zip}</div>
       `;
@@ -632,22 +628,6 @@
       };
       panel.querySelector('.zip-apply').onclick = applyZip;
       zipInput.addEventListener('keydown', (e)=>{ if (e.key==='Enter'){ e.preventDefault(); applyZip(); }});
-      
-      // Fingerprint toggle functionality
-      const fingerprintToggle = panel.querySelector('.fingerprint-toggle');
-      const fingerprintEl = panel.querySelector('.jenni-edge-fingerprint');
-      let fingerprintVisible = false;
-      
-      fingerprintToggle.onclick = () => {
-        fingerprintVisible = !fingerprintVisible;
-        fingerprintEl.style.display = fingerprintVisible ? 'block' : 'none';
-        fingerprintToggle.textContent = fingerprintVisible ? '🔍✓' : '🔍';
-        
-        if (fingerprintVisible) {
-          this.renderFingerprint(fingerprintEl);
-        }
-      };
-      
   document.body.appendChild(panel);
   this.state.panelEl = panel;
       // Populate formula and nodes: prefer nodes from resolve payload, else fetch
@@ -747,61 +727,7 @@
           const r = (n)=> Number.isFinite(n)?Math.round(n):'-';
           formulaEl.textContent = `PDP $${r(pg.price)} → Buy $${r(pg.buy_cost||pg.landed_cost)} + Courier $${r(pg.courier_est)} + Fee $${r(pg.fee)} = Profit $${r(pg.margin)}`;
         }
-        
-        // Update fingerprint if visible
-        const fingerprintEl = panel.querySelector('.jenni-edge-fingerprint');
-        if (fingerprintEl && fingerprintEl.style.display !== 'none') {
-          this.renderFingerprint(fingerprintEl);
-        }
       } catch {}
-    },
-
-    renderFingerprint(container) {
-      if (!container) return;
-      
-      const fp = this.fingerprint();
-      const quality = this.calculateFingerprintQuality(fp);
-      
-      // Quality indicator
-      const qualityColor = quality >= 0.8 ? '#16a34a' : (quality >= 0.5 ? '#ca8a04' : '#dc2626');
-      const qualityText = quality >= 0.8 ? 'Excellent' : (quality >= 0.5 ? 'Good' : 'Poor');
-      
-      const formatValue = (val, label) => {
-        if (!val) return `<span style="color:#9ca3af">${label}: None</span>`;
-        const truncated = String(val).length > 30 ? String(val).substring(0, 30) + '...' : val;
-        return `<span style="color:#374151">${label}: <strong>${truncated}</strong></span>`;
-      };
-      
-      const formatVariant = (variant) => {
-        if (!variant) return '<span style="color:#9ca3af">Variant: None</span>';
-        const parts = [];
-        if (variant.size) parts.push(`Size: ${variant.size}`);
-        if (variant.color) parts.push(`Color: ${variant.color}`);
-        return `<span style="color:#374151">Variant: <strong>${parts.join(', ')}</strong></span>`;
-      };
-      
-      container.innerHTML = `
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
-          <div style="font-weight:600;font-size:12px">Fingerprint Quality</div>
-          <div style="background:${qualityColor};color:white;padding:2px 6px;border-radius:4px;font-size:10px;font-weight:600">${Math.round(quality * 100)}%</div>
-          <div style="font-size:11px;color:#6b7280">${qualityText}</div>
-        </div>
-        <div style="display:grid;gap:3px;font-size:11px;line-height:1.3">
-          ${formatValue(fp.gtin, 'GTIN')}
-          ${formatValue(fp.sku, 'SKU')}
-          ${formatValue(fp.styleCode, 'Style')}
-          ${formatValue(fp.brand, 'Brand')}
-          ${formatValue(fp.price ? '$' + fp.price.toFixed(2) : null, 'Price')}
-          ${formatVariant(fp.variant)}
-        </div>
-        <div style="margin-top:6px;padding-top:6px;border-top:1px solid #e5e7eb;font-size:10px;color:#6b7280">
-          Updated: ${new Date(fp.timestamp).toLocaleTimeString()}
-        </div>
-        ${this.config.debug ? `<details style="margin-top:6px;font-size:10px">
-          <summary style="cursor:pointer;color:#6b7280">Debug Info</summary>
-          <pre style="margin:4px 0;padding:4px;background:#f3f4f6;border-radius:4px;overflow:auto;max-height:100px;font-size:9px">${JSON.stringify(fp, null, 2)}</pre>
-        </details>` : ''}
-      `;
     },
 
     setZip(newZip, opts={}) {

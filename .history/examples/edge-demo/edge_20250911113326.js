@@ -16,7 +16,7 @@
       const bySelectors = (selectors, validator = null) => {
         for (const s of selectors) {
           try {
-          const el = document.querySelector(s);
+            const el = document.querySelector(s);
             if (!el) continue;
             
             let value = el.getAttribute('content') || el.getAttribute('value') || 
@@ -118,9 +118,9 @@
             if (!jsonText.trim()) continue;
             
             let json = JSON.parse(jsonText);
-          const arr = Array.isArray(json) ? json : [json];
+            const arr = Array.isArray(json) ? json : [json];
             
-          for (const node of arr) {
+            for (const node of arr) {
               this.extractFromJsonLdNode(node, ld);
             }
           } catch (e) {
@@ -158,196 +158,6 @@
         timestamp: Date.now(),
         userAgent: navigator.userAgent.split(' ')[0] // First part for debugging
       };
-    },
-
-    // Helper: Extract from JSON-LD node recursively
-    extractFromJsonLdNode(node, ld) {
-      if (!node || typeof node !== 'object') return;
-      
-      const type = (node['@type'] || node.type || '').toString().toLowerCase();
-      
-      if (type.includes('product') || type.includes('offer')) {
-        // Basic properties
-        ld.name = ld.name || node.name || null;
-        ld.sku = ld.sku || node.sku || null;
-        ld.mpn = ld.mpn || node.mpn || null;
-        
-        // GTIN variants
-        ld.gtin13 = ld.gtin13 || node.gtin13 || null;
-        ld.gtin12 = ld.gtin12 || node.gtin12 || null;  
-        ld.gtin = ld.gtin || node.gtin || node.gtin14 || node.gtin8 || null;
-        
-        // Brand handling (string or object)
-        if (node.brand && !ld.brand) {
-          if (typeof node.brand === 'string') {
-            ld.brand = node.brand;
-          } else if (node.brand.name) {
-            ld.brand = node.brand.name;
-          } else if (node.brand['@type'] && node.brand['@type'].includes('Brand')) {
-            ld.brand = node.brand.name || node.brand.alternateName || null;
-          }
-        }
-        
-        // Offers handling
-        if (node.offers && !ld.offers) {
-          ld.offers = node.offers;
-        }
-      }
-      
-      // Recursive search in nested objects/arrays
-      for (const [key, value] of Object.entries(node)) {
-        if (key.startsWith('@')) continue; // Skip JSON-LD metadata
-        
-        if (Array.isArray(value)) {
-          value.forEach(item => this.extractFromJsonLdNode(item, ld));
-        } else if (typeof value === 'object' && value !== null) {
-          this.extractFromJsonLdNode(value, ld);
-        }
-      }
-    },
-
-    // Helper: Extract brand from title using common patterns
-    extractBrandFromTitle(title) {
-      if (!title) return null;
-      
-      // Common brand patterns in titles
-      const brandPatterns = [
-        /^([A-Z][a-zA-Z]+)\s+/,  // "Nike Air Max"
-        /\b(Nike|Adidas|Puma|Jordan|Converse|Vans|New Balance|ASICS|Under Armour|Reebok)\b/i,
-        /\b([A-Z]{2,})\s+[A-Z0-9-]+/,  // "NIKE ABC-123"
-      ];
-      
-      for (const pattern of brandPatterns) {
-        const match = title.match(pattern);
-        if (match) return match[1];
-      }
-      
-      return null;
-    },
-
-    // Helper: Enhanced style code extraction
-    extractStyleCode() {
-      // URL-based extraction (improved patterns)
-      const urlPatterns = [
-        /\/([A-Z0-9]{2,}-[A-Z0-9]{2,})/i,          // /ABC-123
-        /\/([A-Z]{2,}[0-9]{3,})/i,                  // /ABC123
-        /product[\/\-]([A-Z0-9]{4,}-[0-9]{3,})/i,  // product/ABC-123
-        /-([A-Z0-9]{4,}-[0-9]{3,})/i,              // something-ABC-123
-      ];
-      
-      for (const pattern of urlPatterns) {
-        const match = location.pathname.match(pattern) || location.href.match(pattern);
-        if (match) return match[1];
-      }
-      
-      // Content-based extraction
-      const contentPatterns = [
-        '.style-code', '.product-code', '.model-code',
-        '[data-style]', '[data-style-code]',
-        '.product-details:contains("Style")',
-      ];
-      
-      for (const selector of contentPatterns) {
-        try {
-          const el = document.querySelector(selector);
-          if (el) {
-            const text = el.textContent || el.getAttribute('data-style') || '';
-            const match = text.match(/([A-Z0-9]{4,}-[0-9]{3,})/i);
-            if (match) return match[1];
-          }
-        } catch {}
-      }
-      
-      return null;
-    },
-
-    // Helper: Extract current price from page
-    extractCurrentPrice() {
-      const priceSelectors = [
-        '.price.current', '.current-price', '.sale-price', '.price-now',
-        '[data-price]', '[data-current-price]',
-        '.price:not(.original):not(.was)', 
-        'meta[property="product:price:amount"]',
-        '[itemprop="price"]', '[itemprop="lowPrice"]',
-        '.product-price .price', '.price-current'
-      ];
-      
-      for (const selector of priceSelectors) {
-        try {
-          const el = document.querySelector(selector);
-          if (!el) continue;
-          
-          let priceText = el.getAttribute('content') || 
-                         el.getAttribute('data-price') || 
-                         el.textContent || '';
-          
-          // Extract numeric price
-          const match = priceText.match(/[\d,]+\.?\d*/);
-          if (match) {
-            const price = parseFloat(match[0].replace(/,/g, ''));
-            if (price > 0) return price;
-          }
-        } catch {}
-      }
-      
-      return null;
-    },
-
-    // Helper: Detect selected variant
-    detectSelectedVariant() {
-      const variantInfo = {};
-      
-      // Size detection
-      const sizeSelectors = [
-        'select[name*="size"] option:checked',
-        'input[name*="size"]:checked', 
-        '.size-option.selected',
-        '[data-size].selected'
-      ];
-      
-      for (const selector of sizeSelectors) {
-        try {
-          const el = document.querySelector(selector);
-          if (el) {
-            variantInfo.size = el.value || el.textContent || el.getAttribute('data-size');
-            break;
-          }
-        } catch {}
-      }
-      
-      // Color detection  
-      const colorSelectors = [
-        'select[name*="color"] option:checked',
-        'input[name*="color"]:checked',
-        '.color-option.selected',
-        '[data-color].selected'
-      ];
-      
-      for (const selector of colorSelectors) {
-        try {
-          const el = document.querySelector(selector);
-          if (el) {
-            variantInfo.color = el.value || el.textContent || el.getAttribute('data-color');
-            break;
-          }
-      } catch {}
-      }
-      
-      return Object.keys(variantInfo).length > 0 ? variantInfo : null;
-    },
-
-    // Helper: Calculate fingerprint quality score
-    calculateFingerprintQuality(fp) {
-      if (!fp) return 0;
-      let score = 0;
-      if (fp.gtin) score += 0.5;
-      if (fp.sku) score += 0.2;
-      if (fp.styleCode) score += 0.15;
-      if (fp.brand) score += 0.1;
-      if (fp.title) score += 0.05;
-      if (fp.price) score += 0.05;
-      if (fp.variant) score += 0.05;
-      return Math.min(1, score);
     },
 
     async run() {
@@ -542,7 +352,7 @@
         try { this.updatePanelContent(this.state.panelEl, data); } catch {}
       } else if (this.config.autoOpenPanel && !this.state.openedOnce) {
         this.state.openedOnce = true;
-        setTimeout(()=>this.openPanel(), 10);
+        setTimeout(()=>this.openPanel(), 50);
       }
 
       // Click the pill to open the detail panel
@@ -605,17 +415,13 @@
           <button class="jenni-edge-close" aria-label="Close">✕</button>
         </div>
         <div class="jenni-edge-body">
-        <div class="jenni-edge-node loading">Finding nearby stores…</div>
-        </div>
           <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px">
             <input aria-label="ZIP code" class="zip-input" placeholder="ZIP" value="${this.config.zip}" style="flex:0 0 90px;padding:8px 10px;border:1px solid #e5e7eb;border-radius:8px"/>
             <button class="zip-apply" style="padding:8px 10px;border-radius:8px;border:1px solid #e5e7eb;background:#f8fafc;cursor:pointer">Update</button>
-            <button class="fingerprint-toggle" style="padding:4px 8px;border-radius:6px;border:1px solid #e5e7eb;background:#f8fafc;cursor:pointer;font-size:11px;margin-left:auto">🔍</button>
           </div>
-          <div class="jenni-edge-fingerprint" style="display:none;margin-bottom:8px;padding:8px;background:#f8fafc;border-radius:8px;border:1px solid #e5e7eb"></div>
           <div class="jenni-edge-formula"></div>
-
-
+          <div class="jenni-edge-node loading">Finding nearby stores…</div>
+        </div>
         <button class="jenni-edge-cta">${ctaText}</button>
         <div class="jenni-edge-foot">ZIP ${this.config.zip}</div>
       `;
@@ -632,22 +438,6 @@
       };
       panel.querySelector('.zip-apply').onclick = applyZip;
       zipInput.addEventListener('keydown', (e)=>{ if (e.key==='Enter'){ e.preventDefault(); applyZip(); }});
-      
-      // Fingerprint toggle functionality
-      const fingerprintToggle = panel.querySelector('.fingerprint-toggle');
-      const fingerprintEl = panel.querySelector('.jenni-edge-fingerprint');
-      let fingerprintVisible = false;
-      
-      fingerprintToggle.onclick = () => {
-        fingerprintVisible = !fingerprintVisible;
-        fingerprintEl.style.display = fingerprintVisible ? 'block' : 'none';
-        fingerprintToggle.textContent = fingerprintVisible ? '🔍✓' : '🔍';
-        
-        if (fingerprintVisible) {
-          this.renderFingerprint(fingerprintEl);
-        }
-      };
-      
   document.body.appendChild(panel);
   this.state.panelEl = panel;
       // Populate formula and nodes: prefer nodes from resolve payload, else fetch
@@ -747,61 +537,7 @@
           const r = (n)=> Number.isFinite(n)?Math.round(n):'-';
           formulaEl.textContent = `PDP $${r(pg.price)} → Buy $${r(pg.buy_cost||pg.landed_cost)} + Courier $${r(pg.courier_est)} + Fee $${r(pg.fee)} = Profit $${r(pg.margin)}`;
         }
-        
-        // Update fingerprint if visible
-        const fingerprintEl = panel.querySelector('.jenni-edge-fingerprint');
-        if (fingerprintEl && fingerprintEl.style.display !== 'none') {
-          this.renderFingerprint(fingerprintEl);
-        }
       } catch {}
-    },
-
-    renderFingerprint(container) {
-      if (!container) return;
-      
-      const fp = this.fingerprint();
-      const quality = this.calculateFingerprintQuality(fp);
-      
-      // Quality indicator
-      const qualityColor = quality >= 0.8 ? '#16a34a' : (quality >= 0.5 ? '#ca8a04' : '#dc2626');
-      const qualityText = quality >= 0.8 ? 'Excellent' : (quality >= 0.5 ? 'Good' : 'Poor');
-      
-      const formatValue = (val, label) => {
-        if (!val) return `<span style="color:#9ca3af">${label}: None</span>`;
-        const truncated = String(val).length > 30 ? String(val).substring(0, 30) + '...' : val;
-        return `<span style="color:#374151">${label}: <strong>${truncated}</strong></span>`;
-      };
-      
-      const formatVariant = (variant) => {
-        if (!variant) return '<span style="color:#9ca3af">Variant: None</span>';
-        const parts = [];
-        if (variant.size) parts.push(`Size: ${variant.size}`);
-        if (variant.color) parts.push(`Color: ${variant.color}`);
-        return `<span style="color:#374151">Variant: <strong>${parts.join(', ')}</strong></span>`;
-      };
-      
-      container.innerHTML = `
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
-          <div style="font-weight:600;font-size:12px">Fingerprint Quality</div>
-          <div style="background:${qualityColor};color:white;padding:2px 6px;border-radius:4px;font-size:10px;font-weight:600">${Math.round(quality * 100)}%</div>
-          <div style="font-size:11px;color:#6b7280">${qualityText}</div>
-        </div>
-        <div style="display:grid;gap:3px;font-size:11px;line-height:1.3">
-          ${formatValue(fp.gtin, 'GTIN')}
-          ${formatValue(fp.sku, 'SKU')}
-          ${formatValue(fp.styleCode, 'Style')}
-          ${formatValue(fp.brand, 'Brand')}
-          ${formatValue(fp.price ? '$' + fp.price.toFixed(2) : null, 'Price')}
-          ${formatVariant(fp.variant)}
-        </div>
-        <div style="margin-top:6px;padding-top:6px;border-top:1px solid #e5e7eb;font-size:10px;color:#6b7280">
-          Updated: ${new Date(fp.timestamp).toLocaleTimeString()}
-        </div>
-        ${this.config.debug ? `<details style="margin-top:6px;font-size:10px">
-          <summary style="cursor:pointer;color:#6b7280">Debug Info</summary>
-          <pre style="margin:4px 0;padding:4px;background:#f3f4f6;border-radius:4px;overflow:auto;max-height:100px;font-size:9px">${JSON.stringify(fp, null, 2)}</pre>
-        </details>` : ''}
-      `;
     },
 
     setZip(newZip, opts={}) {

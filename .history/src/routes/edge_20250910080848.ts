@@ -194,7 +194,7 @@ edge.post('/resolve', async (req: Request, res: Response) => {
 });
 
 edge.post('/export', (_req: Request, res: Response) => {
-  const snippet = `<script src="https://cdn.example.com/jenni/edge.js" defer></script>\n<script>JenniEdge.init({ tenant:'demo', zip:'10001', apiBase:'https://api.example.com/edge', debug: true })</script>`;
+  const snippet = `<script src="https://cdn.example.com/jenni/edge.js" defer></script>\n<script>JenniEdge.init({ tenant:'demo', zip:'10001', apiBase:'https://api.example.com/edge' })</script>`;
   res.json({ ok: true, snippet, templateUrl: 'https://cdn.example.com/jenni/gtm-template.json' });
 });
 
@@ -425,8 +425,7 @@ edge.get('/preview-overlay', async (req: Request, res: Response) => {
         <div class="title">${resolved?.eligible ? 'Get it Today' : 'Preview'}</div>
     <div class="muted" style="margin-top:6px">${esc(fp?.title)||'Product'} • ZIP ${esc(zip)} • ${resolved?.eligible?`Arrives by ${esc(etaTxt)}`:'Not eligible today'}</div>
     <div style="margin-top:6px">Fingerprint: <span class="badge">${matchMeta.matchType}</span><span class="badge">Q ${(scoreFingerprint(fp)).toFixed(2)}</span>${pg?.suggestedIncentive?`<span class="incent">${pg.suggestedIncentive.replace(/_/g,' ')}</span>`:''}</div>
-    <div style="margin-top:10px">PDP $${Math.round(pg?.price||0)} → Buy $${Math.round(pg?.buy_cost||pg?.landed_cost||0)} + Courier $${Math.round(pg?.courier_est||0)} + Fee $${Math.round(pg?.fee||0)} =
-     $${Math.round(pg?.margin||0)}</div>
+    <div style="margin-top:10px">PDP $${Math.round(pg?.price||0)} → Buy $${Math.round(pg?.buy_cost||pg?.landed_cost||0)} + Courier $${Math.round(pg?.courier_est||0)} + Fee $${Math.round(pg?.fee||0)} = Profit $${Math.round(pg?.margin||0)}</div>
         <div class="nodes" style="margin-top:12px">
           ${(nodes.slice(0,3)).map(n=>`<div class="n"><div><strong>${esc(n.name||'Store')}</strong> • ${Math.round(n.distanceMiles||0)} mi • ~${Math.round(n.etaMinutes||0)}m ${n.pgPass?'<span class="pill">Pass</span>':'<span class="pill" style="background:#92400e">Hold</span>'}</div><div class="muted">Profit $${Math.round(n.margin||0)}</div></div>`).join('')}
         </div>
