@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enhanced JENNi Widgets - Apple-Inspired Design</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 40px 20px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 20px;
+            backdrop-filter: blur(20px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+        
+        .header h1 {
+            margin: 0 0 12px;
+            font-size: 36px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .header p {
+            margin: 0;
+            font-size: 18px;
+            color: #6b7280;
+            line-height: 1.6;
+        }
+        
+        .demo-section {
+            background: rgba(255, 255, 255, 0.9);
+            margin: 30px 0;
+            padding: 30px;
+            border-radius: 16px;
+            backdrop-filter: blur(20px);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .demo-section h2 {
+            margin-top: 0;
+            color: #1f2937;
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+        
+        .demo-description {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+            font-size: 14px;
+            color: #64748b;
+            line-height: 1.6;
+        }
+        
+        .product-showcase {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+            margin: 30px 0;
+        }
+        
+        .product-card {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+            border: 1px solid #f1f5f9;
+            transition: all 0.3s ease;
+        }
+        
+        .product-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15);
+        }
+        
+        .product-image {
+            width: 100%;
+            height: 200px;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            border-radius: 12px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 48px;
+            color: white;
+        }
+        
+        .product-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #1f2937;
+            margin: 0 0 8px;
+        }
+        
+        .product-price {
+            font-size: 24px;
+            font-weight: 700;
+            color: #059669;
+            margin: 0 0 20px;
+        }
+        
+        .product-details {
+            font-size: 14px;
+            color: #6b7280;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+        
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+        
+        .feature-card {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid #e5e7eb;
+            text-align: center;
+        }
+        
+        .feature-icon {
+            font-size: 32px;
+            margin-bottom: 12px;
+        }
+        
+        .feature-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 8px;
+        }
+        
+        .feature-description {
+            font-size: 14px;
+            color: #6b7280;
+            line-height: 1.4;
+        }
+        
+        .test-controls {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .test-button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            margin: 8px;
+            transition: all 0.2s ease;
+        }
+        
+        .test-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+        
+        .console-output {
+            background: #1f2937;
+            color: #e5e7eb;
+            border-radius: 8px;
+            padding: 16px;
+            margin: 20px 0;
+            font-family: 'SF Mono', Consolas, 'Liberation Mono', Menlo, monospace;
+            font-size: 13px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .zip-input-demo {
+            max-width: 400px;
+            margin: 20px auto;
+        }
+        
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 28px;
+            }
+            
+            .product-showcase {
+                grid-template-columns: 1fr;
+            }
+            
+            .feature-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🚀 Enhanced JENNi Widgets</h1>
+        <p>Apple-inspired design with automatic ZIP detection, smooth animations, and seamless user experience</p>
+    </div>
+
+    <!-- Feature Overview -->
+    <div class="demo-section">
+        <h2>✨ Key Features</h2>
+        <div class="feature-grid">
+            <div class="feature-card">
+                <div class="feature-icon">📍</div>
+                <div class="feature-title">Auto ZIP Detection</div>
+                <div class="feature-description">Automatically detects location using geolocation API with IP fallback</div>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🎨</div>
+                <div class="feature-title">Apple-Inspired Design</div>
+                <div class="feature-description">Clean, minimal interface with system fonts and smooth animations</div>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">💾</div>
+                <div class="feature-title">Smart Persistence</div>
+                <div class="feature-description">Remembers user preferences in localStorage for future visits</div>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">⚡</div>
+                <div class="feature-title">Micro-interactions</div>
+                <div class="feature-description">Subtle animations and smooth transitions for better UX</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ZIP Input Component Demo -->
+    <div class="demo-section">
+        <h2>📍 Enhanced ZIP Code Input</h2>
+        <div class="demo-description">
+            <strong>Features:</strong> Auto-detection with geolocation, IP fallback, localStorage persistence, 
+            Apple-inspired modal, smooth animations, and comprehensive validation.
+        </div>
+        
+        <div class="zip-input-demo" id="zip-input-container"></div>
+        
+        <div class="test-controls">
+            <button class="test-button" onclick="testZipInput()">Test ZIP Input</button>
+            <button class="test-button" onclick="clearZipStorage()">Clear Stored ZIP</button>
+            <button class="test-button" onclick="simulateDetection()">Simulate Auto-Detection</button>
+        </div>
+    </div>
+
+    <!-- Universal Widget Demo -->
+    <div class="demo-section">
+        <h2>🚀 Universal JENNi Widgets</h2>
+        <div class="demo-description">
+            <strong>Enhanced widgets</strong> with automatic ZIP detection, Apple-inspired design, 
+            and seamless integration across all platforms.
+        </div>
+        
+        <div class="product-showcase">
+            <div class="product-card">
+                <div class="product-image">👟</div>
+                <div class="product-title">Nike Air Max 270</div>
+                <div class="product-price">$150.00</div>
+                <div class="product-details">
+                    <strong>GTIN:</strong> 009328295433<br>
+                    <strong>SKU:</strong> NIKE-AM270-BLK<br>
+                    Auto-detecting your location...
+                </div>
+                <div id="universal-widget-1"></div>
+            </div>
+            
+            <div class="product-card">
+                <div class="product-image">👕</div>
+                <div class="product-title">Adidas Originals Tee</div>
+                <div class="product-price">$35.00</div>
+                <div class="product-details">
+                    <strong>GTIN:</strong> 009328580522<br>
+                    <strong>SKU:</strong> ADIDAS-TEE-WHT<br>
+                    Premium cotton blend
+                </div>
+                <div id="universal-widget-2"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Shopify Widget Demo -->
+    <div class="demo-section">
+        <h2>🛒 Enhanced Shopify Widget</h2>
+        <div class="demo-description">
+            <strong>Theme App Extension</strong> with Apple-inspired design and automatic ZIP detection.
+            This widget would be embedded directly in Shopify product pages.
+        </div>
+        
+        <div class="product-showcase">
+            <div class="product-card">
+                <div class="product-image">⌚</div>
+                <div class="product-title">Apple Watch Series 9</div>
+                <div class="product-price">$399.00</div>
+                <div class="product-details">
+                    <strong>GTIN:</strong> 194253931652<br>
+                    <strong>Variant:</strong> 45mm GPS<br>
+                    Available in multiple colors
+                </div>
+                <!-- Simulated Shopify widget -->
+                <div id="jenni-widget" 
+                     data-store-id="test-store"
+                     data-product-gid="gid://shopify/Product/123"
+                     data-positive_text="Available for same-day delivery"
+                     data-negative_text="Standard shipping available">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Testing Console -->
+    <div class="demo-section">
+        <h2>🧪 Testing Console</h2>
+        <div class="test-controls">
+            <button class="test-button" onclick="testGeolocation()">Test Geolocation</button>
+            <button class="test-button" onclick="testIPDetection()">Test IP Detection</button>
+            <button class="test-button" onclick="testValidation()">Test ZIP Validation</button>
+            <button class="test-button" onclick="testAnimations()">Test Animations</button>
+            <button class="test-button" onclick="clearConsole()">Clear Console</button>
+        </div>
+        <div id="console-output" class="console-output">
+            <div>🚀 Enhanced JENNi Widgets Test Console</div>
+            <div>Ready for testing...</div>
+        </div>
+    </div>
+
+    <!-- Include Enhanced Libraries -->
+    <script src="../../src/lib/zipCodeManager.js"></script>
+    <script src="../../src/components/ZipCodeInput.js"></script>
+    <script src="../../jenni-universal.js"></script>
+    
+    <!-- Enhanced Shopify Widget -->
+    <script>
+        // Enhanced Shopify widget simulation
+        (()=> {
+          let currentZip = null;
+
+          async function initZipManager() {
+            try {
+              const stored = localStorage.getItem("jenni_zip_preference");
+              if (stored && /^\d{5}$/.test(stored)) {
+                currentZip = stored;
+                return stored;
+              }
+
+              if (navigator.geolocation) {
+                return new Promise((resolve) => {
+                  navigator.geolocation.getCurrentPosition(
+                    async (position) => {
+                      try {
+                        const { latitude, longitude } = position.coords;
+                        const response = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=en`);
+                        const data = await response.json();
+                        const zip = data.postcode?.replace(/\D/g, '').slice(0, 5);
+                        
+                        if (zip && /^\d{5}$/.test(zip)) {
+                          currentZip = zip;
+                          localStorage.setItem("jenni_zip_preference", zip);
+                          resolve(zip);
+                        } else {
+                          currentZip = "60612";
+                          resolve(currentZip);
+                        }
+                      } catch (error) {
+                        currentZip = "60612";
+                        resolve(currentZip);
+                      }
+                    },
+                    () => {
+                      currentZip = "60612";
+                      resolve(currentZip);
+                    },
+                    { timeout: 5000 }
+                  );
+                });
+              }
+
+              currentZip = "60612";
+              return currentZip;
+            } catch (error) {
+              currentZip = "60612";
+              return currentZip;
+            }
+          }
+
+          function createEnhancedShopifyWidget(el, zip) {
+            el.className = 'jenni-widget-enhanced';
+            el.innerHTML = `
+              <div class="jenni-widget-content available">
+                <div class="jenni-widget-header">
+                  <span class="jenni-widget-icon">✓</span>
+                  <div class="jenni-widget-text">
+                    <div class="jenni-widget-title">Available for same-day delivery</div>
+                    <div class="jenni-widget-subtitle">Fast delivery available</div>
+                  </div>
+                </div>
+                <div class="jenni-widget-location">
+                  <span class="jenni-location-icon">📍</span>
+                  <span class="jenni-location-text">${zip}</span>
+                  <button class="jenni-location-change" aria-label="Change location">Change</button>
+                </div>
+              </div>
+            `;
+
+            // Add enhanced styles
+            if (!document.getElementById('jenni-widget-styles')) {
+              const styles = document.createElement('style');
+              styles.id = 'jenni-widget-styles';
+              styles.textContent = `
+                .jenni-widget-enhanced {
+                  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+                  border-radius: 12px;
+                  background: #ffffff;
+                  border: 1px solid #e5e7eb;
+                  padding: 16px;
+                  margin: 16px 0;
+                  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+                  transition: all 0.2s ease;
+                }
+                .jenni-widget-enhanced:hover {
+                  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+                }
+                .jenni-widget-header {
+                  display: flex;
+                  align-items: center;
+                  gap: 12px;
+                  margin-bottom: 12px;
+                }
+                .jenni-widget-icon {
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                  width: 32px;
+                  height: 32px;
+                  border-radius: 8px;
+                  font-size: 16px;
+                  font-weight: 600;
+                  background: #d1fae5;
+                  color: #059669;
+                }
+                .jenni-widget-title {
+                  font-size: 16px;
+                  font-weight: 600;
+                  color: #059669;
+                  line-height: 1.2;
+                }
+                .jenni-widget-subtitle {
+                  font-size: 13px;
+                  color: #6b7280;
+                  margin-top: 2px;
+                }
+                .jenni-widget-location {
+                  display: flex;
+                  align-items: center;
+                  gap: 8px;
+                  padding: 8px 12px;
+                  background: #f9fafb;
+                  border-radius: 8px;
+                  font-size: 14px;
+                }
+                .jenni-location-icon {
+                  color: #6b7280;
+                }
+                .jenni-location-text {
+                  flex: 1;
+                  font-weight: 500;
+                  color: #374151;
+                }
+                .jenni-location-change {
+                  background: none;
+                  border: none;
+                  color: #2563eb;
+                  font-size: 13px;
+                  font-weight: 500;
+                  cursor: pointer;
+                  padding: 4px 8px;
+                  border-radius: 4px;
+                  transition: background 0.2s ease;
+                }
+                .jenni-location-change:hover {
+                  background: #dbeafe;
+                }
+              `;
+              document.head.appendChild(styles);
+            }
+          }
+
+          document.addEventListener("DOMContentLoaded", async ()=> {
+            const el = document.getElementById("jenni-widget");
+            if(!el) return;
+
+            await initZipManager();
+            createEnhancedShopifyWidget(el, currentZip);
+          });
+        })();
+    </script>
+
+    <script>
+        // Console logging
+        const consoleOutput = document.getElementById('console-output');
+        
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const line = document.createElement('div');
+            line.style.color = type === 'error' ? '#ef4444' : type === 'success' ? '#10b981' : '#e5e7eb';
+            line.textContent = `[${timestamp}] ${message}`;
+            consoleOutput.appendChild(line);
+            consoleOutput.scrollTop = consoleOutput.scrollHeight;
+        }
+
+        function clearConsole() {
+            consoleOutput.innerHTML = '<div>🚀 Enhanced JENNi Widgets Test Console</div><div>Console cleared...</div>';
+        }
+
+        // Test Functions
+        async function testZipInput() {
+            log('Testing ZIP input component...', 'info');
+            try {
+                const container = document.getElementById('zip-input-container');
+                container.innerHTML = '';
+                
+                const zipInput = new ZipCodeInput(container, {
+                    onZipChange: (zip, details) => {
+                        log(`ZIP changed to ${zip} (source: ${details.source})`, 'success');
+                    },
+                    onValidationError: (error) => {
+                        log(`Validation error: ${error}`, 'error');
+                    },
+                    debug: true
+                });
+                
+                log('ZIP input component created successfully', 'success');
+            } catch (error) {
+                log(`ZIP input test failed: ${error.message}`, 'error');
+            }
+        }
+
+        function clearZipStorage() {
+            localStorage.removeItem('jenni_zip_preference');
+            log('Cleared stored ZIP code', 'info');
+        }
+
+        async function simulateDetection() {
+            log('Simulating ZIP detection...', 'info');
+            const testZip = '90210';
+            localStorage.setItem('jenni_zip_preference', testZip);
+            log(`Set test ZIP: ${testZip}`, 'success');
+        }
+
+        async function testGeolocation() {
+            log('Testing geolocation...', 'info');
+            if (!navigator.geolocation) {
+                log('Geolocation not supported', 'error');
+                return;
+            }
+            
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    log(`Location: ${position.coords.latitude}, ${position.coords.longitude}`, 'success');
+                },
+                (error) => {
+                    log(`Geolocation error: ${error.message}`, 'error');
+                },
+                { timeout: 5000 }
+            );
+        }
+
+        async function testIPDetection() {
+            log('Testing IP-based detection...', 'info');
+            try {
+                const response = await fetch('https://ipapi.co/json/');
+                const data = await response.json();
+                log(`IP location: ${data.city}, ${data.region} ${data.postal}`, 'success');
+            } catch (error) {
+                log(`IP detection failed: ${error.message}`, 'error');
+            }
+        }
+
+        function testValidation() {
+            log('Testing ZIP validation...', 'info');
+            const testCases = ['12345', '1234', 'abcde', '12345-6789', ''];
+            testCases.forEach(zip => {
+                const isValid = /^\d{5}$/.test(zip);
+                log(`ZIP "${zip}": ${isValid ? 'VALID' : 'INVALID'}`, isValid ? 'success' : 'error');
+            });
+        }
+
+        function testAnimations() {
+            log('Testing animations...', 'info');
+            const widgets = document.querySelectorAll('.jenni-widget-enhanced, .jenni-widget-universal');
+            widgets.forEach((widget, index) => {
+                setTimeout(() => {
+                    widget.style.transform = 'scale(1.05)';
+                    setTimeout(() => {
+                        widget.style.transform = 'scale(1)';
+                    }, 200);
+                }, index * 100);
+            });
+            log('Animation test completed', 'success');
+        }
+
+        // Initialize Universal Widgets
+        document.addEventListener('DOMContentLoaded', async function() {
+            log('Initializing enhanced widgets...', 'info');
+            
+            try {
+                // Test ZIP Input Component
+                await testZipInput();
+                
+                // Initialize Universal Widgets
+                if (window.JENNi) {
+                    const widget1 = await window.JENNi.createWidget(
+                        document.getElementById('universal-widget-1'),
+                        { gtin: '009328295433' }
+                    );
+                    
+                    const widget2 = await window.JENNi.createWidget(
+                        document.getElementById('universal-widget-2'),
+                        { gtin: '009328580522' }
+                    );
+                    
+                    log('Universal widgets initialized successfully', 'success');
+                } else {
+                    log('JENNi Universal library not loaded', 'error');
+                }
+                
+                log('All widgets initialized successfully', 'success');
+            } catch (error) {
+                log(`Initialization error: ${error.message}`, 'error');
+            }
+        });
+    </script>
+</body>
+</html>

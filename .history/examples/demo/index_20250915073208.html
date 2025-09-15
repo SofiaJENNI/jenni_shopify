@@ -1,0 +1,528 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>JENNi Demo Hub</title>
+  <style>
+    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;margin:0;padding:24px;background:#f9fafb;color:#111}
+    .wrap{max-width:1000px;margin:0 auto}
+    h1{margin:0 0 8px}
+    .sub{color:#6b7280;margin-bottom:20px}
+    .card{background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:16px;margin:12px 0}
+    .row{display:flex;gap:16px;flex-wrap:wrap}
+    .col{flex:1 1 320px}
+    input,button,textarea{font:inherit}
+    input[type=text]{width:100%;padding:10px;border:1px solid #e5e7eb;border-radius:8px}
+    button{padding:10px 14px;border-radius:8px;border:1px solid #e5e7eb;background:#111827;color:#fff;cursor:pointer}
+    pre{background:#0b1020;color:#e5e7eb;padding:12px;border-radius:8px;overflow:auto}
+    code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+    .muted{color:#6b7280}
+    .ok{color:#10b981}
+    .err{color:#ef4444}
+    .btn-light{background:#f9fafb;color:#111;border-color:#e5e7eb}
+    .small{font-size:12px}
+    .install-btn{background:#10b981;color:#fff;border-color:#10b981;transition:all 0.2s ease}
+    .install-btn:hover:not(:disabled){background:#059669;border-color:#059669}
+    .install-btn:disabled{background:#9ca3af;border-color:#9ca3af;cursor:not-allowed}
+    .install-status{padding:8px;border-radius:6px;margin-top:8px;font-size:11px;line-height:1.4}
+    .install-status.success{background:#ecfdf5;border:1px solid #a7f3d0;color:#065f46}
+    .install-status.info{background:#eff6ff;border:1px solid #bfdbfe;color:#1e40af}
+    .install-status.error{background:#fef2f2;border:1px solid #fecaca;color:#991b1b}
+    .debug-console{background:#1f2937;border-radius:8px;margin-top:12px;padding:12px;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+    .debug-header{color:#10b981;font-weight:600;font-size:12px;margin-bottom:8px}
+    .debug-output{color:#e5e7eb;font-size:11px;max-height:200px;overflow-y:auto;margin-bottom:8px;line-height:1.4}
+    .debug-output::-webkit-scrollbar{width:4px}
+    .debug-output::-webkit-scrollbar-track{background:transparent}
+    .debug-output::-webkit-scrollbar-thumb{background:#374151;border-radius:2px}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>JENNi Demo Hub</h1>
+    <div class="sub">Single place to launch the overlay, copy a bookmarklet, and call the Shopify app proxy.</div>
+
+    <div class="row">
+      <div class="col">
+        <div class="card">
+          <h3>Overlay on This Page</h3>
+          <div class="muted small">Loads the Edge overlay with automatic ZIP detection using your running backend.</div>
+          <div style="display:flex;gap:8px;margin:10px 0;align-items:center;flex-wrap:wrap">
+            <label class="small muted" style="display:flex;align-items:center;gap:6px"><input id="autoOpen" type="checkbox" checked/> Auto-open panel</label>
+            <label class="small muted" style="display:flex;align-items:center;gap:6px"><input id="debugMode" type="checkbox" checked/> Debug mode</label>
+            <label class="small muted" style="display:flex;align-items:center;gap:6px">Position
+              <select id="pos" style="margin-left:6px;border:1px solid #e5e7eb;border-radius:8px;padding:6px">
+                <option value="bottom-right" selected>Bottom-right</option>
+                <option value="bottom-left">Bottom-left</option>
+                <option value="top-right">Top-right</option>
+                <option value="top-left">Top-left</option>
+              </select>
+            </label>
+            <button id="loadOverlay">Load Overlay</button>
+          </div>
+          <div id="overlayMsg" class="small muted">ZIP auto-detected via IP • Client: <code id="clientUrl"></code> • API: <code id="apiUrl"></code></div>
+          <div id="debugConsole" class="debug-console" style="display:none;">
+            <div class="debug-header">🐛 Debug Console</div>
+            <div id="debugOutput" class="debug-output"></div>
+            <button id="clearDebug" class="btn-light small">Clear</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="col">
+        <div class="card">
+          <h3>Enhanced Bookmarklet</h3>
+          <div class="muted small">Auto-detects ZIP via IP, no popups! Drag to bookmarks bar, copy the code, or auto-install.</div>
+          <div style="display:flex;gap:8px;margin:10px 0;align-items:center;flex-wrap:wrap">
+            <a id="bmLink" class="btn btn-light" href="#" draggable="true" style="text-decoration:none;padding:8px 12px;border:1px solid #e5e7eb;border-radius:8px;background:#f3f4f6;color:#111">JENNi Overlay</a>
+            <button id="copyBm" class="btn-light">Copy Code</button>
+            <button id="installBm" class="install-btn">Auto-Install</button>
+          </div>
+          <div id="installStatus" class="install-status" style="display:none"></div>
+          <pre id="bmCode" class="small"><code></code></pre>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Shopify App Proxy – Eligibility API</h3>
+      <div class="muted small">Calls your backend at <code>/v1/availability</code>, which fetches JENNi server‑side.</div>
+      <div class="row" style="margin-top:8px">
+        <div class="col">
+          <label class="small muted">GTIN</label>
+          <input id="gtin" type="text" placeholder="e.g., 009328295433" value="009328295433"/>
+        </div>
+        <div class="col">
+          <label class="small muted">ZIP</label>
+          <input id="zip2" type="text" placeholder="ZIP" value="75062"/>
+        </div>
+        <div class="col" style="align-self:end">
+          <button id="callApi">Check Eligibility</button>
+        </div>
+      </div>
+      <div style="margin-top:10px">
+        <div class="small muted">GET <code id="reqUrl"></code></div>
+        <pre id="result" class="small"><code>// Result appears here</code></pre>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>GTM Snippet (Custom HTML)</h3>
+      <div class="muted small">Production-ready with automatic ZIP detection. Host edge client and inject via GTM. For local demos, this points to your backend.</div>
+      <pre id="gtm" class="small"><code></code></pre>
+    </div>
+
+    <div class="small muted">Tips: start backend <code>npm run dev</code>. Optional PDP demo: <code>npm run edge:demo</code> then open http://localhost:3100</div>
+  </div>
+
+  <script>
+    (function(){
+      const origin = location.origin;
+      const client = origin + '/edge/client.js';
+      const api = origin + '/edge';
+      document.getElementById('clientUrl').textContent = client;
+      document.getElementById('apiUrl').textContent = api;
+
+      // Debug console functionality
+      const debugOutput = document.getElementById('debugOutput');
+      const debugConsole = document.getElementById('debugConsole');
+      
+      // Initialize debug console
+      if (document.getElementById('debugMode').checked) {
+        debugConsole.style.display = 'block';
+        setTimeout(() => {
+          addDebugMessage('🚀 JENNi Demo Hub loaded', 'success');
+          addDebugMessage('🐛 Debug mode is enabled', 'info');
+          addDebugMessage('📍 Detection flow: localStorage → IP → default(60612)', 'info');
+        }, 100);
+      }
+      
+      function addDebugMessage(message, type = 'info') {
+        if (!debugOutput) return;
+        const timestamp = new Date().toLocaleTimeString();
+        const color = type === 'error' ? '#ef4444' : type === 'success' ? '#10b981' : '#e5e7eb';
+        const div = document.createElement('div');
+        div.style.color = color;
+        div.textContent = `[${timestamp}] ${message}`;
+        debugOutput.appendChild(div);
+        debugOutput.scrollTop = debugOutput.scrollHeight;
+      }
+      
+      // Toggle debug console visibility
+      document.getElementById('debugMode').addEventListener('change', function() {
+        debugConsole.style.display = this.checked ? 'block' : 'none';
+        if (this.checked) {
+          addDebugMessage('Debug mode enabled', 'success');
+        }
+      });
+      
+      // Clear debug console
+      document.getElementById('clearDebug').onclick = () => {
+        debugOutput.innerHTML = '';
+        addDebugMessage('Debug console cleared', 'info');
+      };
+
+      // Load overlay on this page
+      document.getElementById('loadOverlay').onclick = async () => {
+        const autoOpen = !!document.getElementById('autoOpen').checked;
+        const debugMode = !!document.getElementById('debugMode').checked;
+        const position = (document.getElementById('pos').value || 'bottom-right');
+        
+        if (debugMode) {
+          addDebugMessage('🚀 Loading JENNi Edge overlay...', 'info');
+          addDebugMessage(`Config: autoOpen=${autoOpen}, position=${position}`, 'info');
+        }
+        
+        const s = document.createElement('script');
+        s.src = client; s.defer = true; document.head.appendChild(s);
+        s.onload = async function(){
+          try { 
+            if (debugMode) addDebugMessage('📦 Script loaded, initializing...', 'info');
+            
+            await (window.JenniEdge||{init:function(){}}).init({ 
+              tenant: 'demo', 
+              apiBase: api, 
+              position, 
+              autoOpenPanel: autoOpen,
+              debug: debugMode
+            });
+            
+            const detectedZip = window.JenniEdge.config ? window.JenniEdge.config.zip : 'unknown';
+            document.getElementById('overlayMsg').innerHTML = '<span class="ok">Overlay loaded</span> • ZIP auto-detected: ' + detectedZip;
+            
+            if (debugMode) {
+              addDebugMessage(`✅ JENNi initialized successfully`, 'success');
+              addDebugMessage(`📍 ZIP detected: ${detectedZip}`, 'success');
+              addDebugMessage(`🎯 Position: ${position}`, 'info');
+              addDebugMessage(`🔓 Auto-open: ${autoOpen}`, 'info');
+            }
+          } catch(e){ 
+            document.getElementById('overlayMsg').innerHTML = '<span class="err">Overlay init failed: ' + e.message + '</span>'; 
+            if (debugMode) {
+              addDebugMessage(`❌ Initialization failed: ${e.message}`, 'error');
+            }
+          }
+        };
+        
+        s.onerror = function() {
+          const errorMsg = 'Failed to load JENNi script';
+          document.getElementById('overlayMsg').innerHTML = '<span class="err">' + errorMsg + '</span>';
+          if (debugMode) {
+            addDebugMessage(`❌ ${errorMsg} from ${client}`, 'error');
+          }
+        };
+      };
+
+      // Enhanced bookmarklet code with IP-based ZIP detection
+function buildBookmarklet(autoOpen, position, debug = true){
+    const T = origin;
+    const pos = String(position||'bottom-right');
+    const openPanel = autoOpen ? "setTimeout(function(){if(window.JenniEdge&&window.JenniEdge.openPanel){window.JenniEdge.openPanel()}},1000);" : "";
+    const debugLogs = debug ? `
+      console.log('🚀 JENNi Edge loading...');
+      console.log('📦 Script loaded, detecting ZIP...');` : '';
+    const debugSuccess = debug ? `
+      console.log('✅ JENNi loaded! ZIP detected:',zip);
+      console.log('📍 Detection flow: localStorage → IP → default(60612)');` : '';
+    
+    return `javascript:(async function(){
+      var T=${JSON.stringify(T)};${debugLogs}
+      var s=document.createElement('script');
+      s.src=T+'/edge/client.js';
+      s.defer=true;
+      document.head.appendChild(s);
+      s.onload=async function(){
+        try{
+          await (window.JenniEdge||{init:function(){}}).init({
+            tenant:'demo',
+            apiBase:T+'/edge',
+            position:${JSON.stringify(pos)},
+            autoOpenPanel:${JSON.stringify(!!autoOpen)},
+            debug:${JSON.stringify(!!debug)}
+          });
+          var zip=window.JenniEdge.config?window.JenniEdge.config.zip:'unknown';${debugSuccess}
+          ${openPanel}
+        }catch(e){
+          console.error('JenniEdge error:',e);
+          try{
+            var zip=prompt('ZIP Code (auto-detection failed):','60612')||'60612';
+            await (window.JenniEdge||{init:function(){}}).init({
+              tenant:'demo',
+              zip:zip,
+              apiBase:T+'/edge',
+              position:${JSON.stringify(pos)},
+              autoOpenPanel:${JSON.stringify(!!autoOpen)},
+              debug:${JSON.stringify(!!debug)}
+            });
+          }catch(e2){
+            alert('JENNi init failed:'+e2.message);
+          }
+        }
+      };
+    })();`.replace(/\s+/g,' ');
+  }
+
+
+      function refreshBookmarklet(){
+        const autoOpen = !!document.getElementById('autoOpen').checked;
+        const debugMode = !!document.getElementById('debugMode').checked;
+        const position = (document.getElementById('pos').value || 'bottom-right');
+        const bm = buildBookmarklet(autoOpen, position, debugMode);
+        document.getElementById('bmLink').href = bm;
+        document.querySelector('#bmCode code').textContent = bm;
+        document.getElementById('copyBm').onclick = async () => {
+          try { 
+            await navigator.clipboard.writeText(bm); 
+            alert('Enhanced bookmarklet copied! No ZIP popups, automatic detection enabled.'); 
+            if (debugMode) {
+              addDebugMessage('📋 Bookmarklet copied to clipboard', 'success');
+            }
+          } catch(e) {
+            alert('Copy failed: ' + e.message);
+            if (debugMode) {
+              addDebugMessage('❌ Copy failed: ' + e.message, 'error');
+            }
+          }
+        };
+      }
+      
+      // Update bookmarklet when settings change
+      document.getElementById('autoOpen').addEventListener('change', refreshBookmarklet);
+      document.getElementById('debugMode').addEventListener('change', refreshBookmarklet);
+      document.getElementById('pos').addEventListener('change', refreshBookmarklet);
+      
+      // Make the "JENNi Overlay" button work with automatic ZIP recognition
+      document.getElementById('bmLink').addEventListener('click', async function(e) {
+        e.preventDefault();
+        const debugMode = !!document.getElementById('debugMode').checked;
+        
+        if (debugMode) {
+          addDebugMessage('🖱️ JENNi Overlay button clicked', 'info');
+          addDebugMessage('🚀 Starting automatic ZIP detection flow...', 'info');
+        }
+        
+        try {
+          // Load the script dynamically
+          const s = document.createElement('script');
+          s.src = client; 
+          s.defer = true; 
+          document.head.appendChild(s);
+          
+          s.onload = async function(){
+            try {
+              if (debugMode) {
+                addDebugMessage('📦 JENNi script loaded successfully', 'success');
+                addDebugMessage('🔍 Starting ZIP detection: localStorage → IP → default(60612)', 'info');
+              }
+              
+              const autoOpen = !!document.getElementById('autoOpen').checked;
+              const position = (document.getElementById('pos').value || 'bottom-right');
+              
+              await (window.JenniEdge||{init:function(){}}).init({
+                tenant: 'demo',
+                apiBase: api,
+                position: position,
+                autoOpenPanel: autoOpen,
+                debug: debugMode
+              });
+              
+              const detectedZip = window.JenniEdge.config ? window.JenniEdge.config.zip : 'unknown';
+              
+              if (debugMode) {
+                addDebugMessage(`✅ JENNi initialized successfully!`, 'success');
+                addDebugMessage(`📍 ZIP detected: ${detectedZip}`, 'success');
+                addDebugMessage(`🎯 Position: ${position}`, 'info');
+                addDebugMessage(`🔓 Auto-open panel: ${autoOpen}`, 'info');
+                addDebugMessage(`📍 Detection flow completed: localStorage → IP → default(60612)`, 'info');
+              } else {
+                console.log('✅ JENNi loaded! ZIP detected:', detectedZip);
+              }
+              
+            } catch(error) {
+              if (debugMode) {
+                addDebugMessage(`❌ JENNi initialization failed: ${error.message}`, 'error');
+              }
+              console.error('JENNi initialization error:', error);
+              
+              // Fallback with prompt if auto-detection fails
+              try {
+                const zip = prompt('ZIP Code (auto-detection failed):', '60612') || '60612';
+                if (debugMode) {
+                  addDebugMessage(`🔄 Fallback: Using manual ZIP ${zip}`, 'info');
+                }
+                
+                await (window.JenniEdge||{init:function(){}}).init({
+                  tenant: 'demo',
+                  zip: zip,
+                  apiBase: api,
+                  position: (document.getElementById('pos').value || 'bottom-right'),
+                  autoOpenPanel: !!document.getElementById('autoOpen').checked,
+                  debug: debugMode
+                });
+                
+                if (debugMode) {
+                  addDebugMessage(`✅ JENNi initialized with manual ZIP: ${zip}`, 'success');
+                }
+              } catch(e2) {
+                if (debugMode) {
+                  addDebugMessage(`❌ Fallback initialization failed: ${e2.message}`, 'error');
+                }
+                alert('JENNi initialization failed: ' + e2.message);
+              }
+            }
+          };
+          
+          s.onerror = function() {
+            const errorMsg = 'Failed to load JENNi script';
+            if (debugMode) {
+              addDebugMessage(`❌ ${errorMsg} from ${client}`, 'error');
+            }
+            alert(errorMsg);
+          };
+          
+        } catch(error) {
+          if (debugMode) {
+            addDebugMessage(`❌ Button click handler error: ${error.message}`, 'error');
+          }
+          console.error('Button click error:', error);
+        }
+      });
+      
+      refreshBookmarklet();
+
+      // Auto-install bookmarklet functionality
+      document.getElementById('installBm').onclick = async () => {
+        const installBtn = document.getElementById('installBm');
+        const autoOpen = !!document.getElementById('autoOpen').checked;
+        const debugMode = !!document.getElementById('debugMode').checked;
+        const position = (document.getElementById('pos').value || 'bottom-right');
+        const bm = buildBookmarklet(autoOpen, position, debugMode);
+        const statusEl = document.getElementById('installStatus');
+        
+        if (debugMode) {
+          addDebugMessage('🔧 Auto-install bookmarklet clicked', 'info');
+          addDebugMessage(`Settings: autoOpen=${autoOpen}, debug=${debugMode}, position=${position}`, 'info');
+        }
+        
+        // Show loading state
+        const originalText = installBtn.textContent;
+        installBtn.textContent = 'Installing...';
+        installBtn.disabled = true;
+        
+        // Show status area
+        statusEl.style.display = 'block';
+        statusEl.className = 'install-status info';
+        statusEl.innerHTML = '🔄 Detecting browser and attempting installation...';
+        
+        try {
+          // Detect browser
+          const isChrome = /Chrome/.test(navigator.userAgent) && /Google Inc/.test(navigator.vendor);
+          const isSafari = /Safari/.test(navigator.userAgent) && /Apple Computer/.test(navigator.vendor);
+          const isEdge = /Edg/.test(navigator.userAgent);
+          const isFirefox = /Firefox/.test(navigator.userAgent);
+          
+          if (isChrome || isEdge) {
+            // Chrome/Edge: Use chrome.bookmarks API if available (requires extension)
+            if (typeof chrome !== 'undefined' && chrome.bookmarks) {
+              try {
+                await chrome.bookmarks.create({
+                  title: 'JENNi Overlay',
+                  url: bm
+                });
+                statusEl.className = 'install-status success';
+                statusEl.innerHTML = '✅ Bookmarklet installed successfully!<br><small>You can now use it on any website.</small>';
+                return;
+              } catch (e) {
+                console.log('Chrome bookmarks API not available, falling back to manual method');
+              }
+            }
+            
+            // Fallback: Show instructions for Chrome
+            statusEl.className = 'install-status info';
+            statusEl.innerHTML = `
+              <strong>Chrome/Edge Installation:</strong><br>
+              <div style="margin-top:6px;">
+                1. Right-click the "JENNi Overlay" button above<br>
+                2. Select "Bookmark this link"<br>
+                3. Or drag the button to your bookmarks bar
+              </div>
+            `;
+          } else if (isSafari) {
+            // Safari: Show Safari-specific instructions
+            statusEl.className = 'install-status info';
+            statusEl.innerHTML = `
+              <strong>Safari Installation:</strong><br>
+              <div style="margin-top:6px;">
+                1. Drag the "JENNi Overlay" button to your bookmarks bar<br>
+                2. Or right-click → "Add to Reading List" → then move to bookmarks<br>
+                3. Make sure bookmarks bar is visible (View → Show Bookmarks Bar)
+              </div>
+            `;
+          } else if (isFirefox) {
+            // Firefox: Show instructions
+            statusEl.className = 'install-status info';
+            statusEl.innerHTML = `
+              <strong>Firefox Installation:</strong><br>
+              <div style="margin-top:6px;">
+                1. Right-click the "JENNi Overlay" button above<br>
+                2. Select "Bookmark This Link"<br>
+                3. Or drag the button to your bookmarks toolbar
+              </div>
+            `;
+          } else {
+            // Generic fallback
+            statusEl.className = 'install-status info';
+            statusEl.innerHTML = `
+              <strong>Manual Installation Required:</strong><br>
+              <div style="margin-top:6px;">
+                1. Right-click the "JENNi Overlay" button above<br>
+                2. Select "Bookmark This Link" or "Add to Bookmarks"<br>
+                3. Or drag the button to your bookmarks bar
+              </div>
+            `;
+          }
+          
+          // Auto-copy to clipboard as backup
+          try {
+            await navigator.clipboard.writeText(bm);
+            statusEl.innerHTML += '<br><br>📋 <strong>Backup:</strong> Bookmarklet code copied to clipboard';
+          } catch (e) {
+            console.log('Clipboard copy failed:', e);
+          }
+          
+        } catch (error) {
+          statusEl.className = 'install-status error';
+          statusEl.innerHTML = `❌ Installation failed: ${error.message}`;
+        } finally {
+          // Reset button state
+          installBtn.textContent = originalText;
+          installBtn.disabled = false;
+        }
+      };
+
+      // Eligibility tester
+      const updateReq = () => {
+        const gtin = document.getElementById('gtin').value.trim();
+        const zip = (document.getElementById('zip2').value || '').replace(/[^0-9]/g,'').slice(0,5);
+        const url = origin + '/v1/availability?gtin='+encodeURIComponent(gtin)+'&zip='+encodeURIComponent(zip||'');
+        document.getElementById('reqUrl').textContent = url;
+        return url;
+      };
+      document.getElementById('gtin').oninput = updateReq;
+      document.getElementById('zip2').oninput = updateReq;
+      updateReq();
+      document.getElementById('callApi').onclick = async () => {
+        const url = updateReq();
+        const pre = document.querySelector('#result code');
+        pre.textContent = '// Fetching...';
+        try { const r = await fetch(url); const j = await r.json(); pre.textContent = JSON.stringify(j, null, 2); }
+        catch(e){ pre.textContent = 'Error: '+(e && e.message || 'failed'); }
+      };
+
+      // GTM snippet preview with auto ZIP detection
+      const gtm = '<script defer src="'+client+'"><\/script>\n<script>\n  window.addEventListener(\'DOMContentLoaded\', async function() {\n    if (window.JenniEdge) {\n      await window.JenniEdge.init({ \n        tenant: \"demo\", \n        apiBase: \"'+api+'\",\n        debug: false \n      });\n    }\n  });\n<\/script>';
+      document.querySelector('#gtm code').textContent = gtm;
+    })();
+  </script>
+</body>
+</html>
