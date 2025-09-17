@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JENNi Edge Demo with Modular Components</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .demo-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 30px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .demo-title {
+            color: white;
+            text-align: center;
+            font-size: 2.5em;
+            font-weight: 700;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .demo-subtitle {
+            color: rgba(255, 255, 255, 0.8);
+            text-align: center;
+            font-size: 1.2em;
+            margin-bottom: 40px;
+        }
+        
+        .demo-content {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 40px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+        
+        .demo-section {
+            margin-bottom: 30px;
+        }
+        
+        .demo-section h3 {
+            color: #333;
+            font-size: 1.5em;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #007AFF;
+            padding-bottom: 5px;
+        }
+        
+        .demo-info {
+            background: #f8f9fa;
+            border-left: 4px solid #007AFF;
+            padding: 15px 20px;
+            margin: 20px 0;
+            border-radius: 0 8px 8px 0;
+        }
+        
+        .component-status {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .status-card {
+            background: white;
+            border-radius: 10px;
+            padding: 15px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            border-left: 4px solid #34C759;
+        }
+        
+        .status-card.loading {
+            border-left-color: #FF9500;
+        }
+        
+        .status-card.error {
+            border-left-color: #FF3B30;
+        }
+        
+        .status-title {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+        }
+        
+        .status-description {
+            font-size: 0.9em;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="demo-container">
+        <h1 class="demo-title">JENNi Edge Demo</h1>
+        <p class="demo-subtitle">Modular Component Architecture</p>
+        
+        <div class="demo-content">
+            <div class="demo-section">
+                <h3>Component Status</h3>
+                <div id="componentStatus" class="component-status">
+                    <div class="status-card loading">
+                        <div class="status-title">Loading Components...</div>
+                        <div class="status-description">Initializing modular architecture</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="demo-section">
+                <h3>Demo Information</h3>
+                <div class="demo-info">
+                    <strong>Refactored Features:</strong><br>
+                    • Store Selection with visual feedback<br>
+                    • Checkout Modal with form validation<br>
+                    • Address Generation utilities<br>
+                    • Form Validation components<br>
+                    • Modular component architecture
+                </div>
+                
+                <div class="demo-info">
+                    <strong>How to test:</strong><br>
+                    1. The JENNi pill will appear in the bottom-right corner<br>
+                    2. Click to open the store selection panel<br>
+                    3. Click on a store to select it (see visual feedback)<br>
+                    4. Click "Deliver with JENNi" to open checkout modal<br>
+                    5. Complete the form and submit to see confirmation
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Load Components -->
+    <script src="../../src/components/AddressGenerator.js"></script>
+    <script src="../../src/components/FormValidators.js"></script>
+    <script src="../../src/components/StoreSelector.js"></script>
+    <script src="../../src/components/CheckoutModal.js"></script>
+    <script src="../../src/components/ComponentLoader.js"></script>
+    
+    <!-- Load Main Edge Script -->
+    <script src="edge.js"></script>
+    
+    <script>
+        // Initialize component status tracking
+        function updateComponentStatus() {
+            const statusContainer = document.getElementById('componentStatus');
+            const components = [
+                { name: 'AddressGenerator', description: 'Generates realistic addresses' },
+                { name: 'FormValidators', description: 'Handles form validation logic' },
+                { name: 'StoreSelector', description: 'Manages store selection UI' },
+                { name: 'CheckoutModal', description: 'Checkout flow and order confirmation' },
+                { name: 'ComponentLoader', description: 'Dynamic component loading' }
+            ];
+            
+            statusContainer.innerHTML = components.map(comp => {
+                const isLoaded = typeof window[comp.name] !== 'undefined';
+                const statusClass = isLoaded ? '' : 'error';
+                const status = isLoaded ? 'Loaded' : 'Not Available';
+                
+                return `
+                    <div class="status-card ${statusClass}">
+                        <div class="status-title">${comp.name} - ${status}</div>
+                        <div class="status-description">${comp.description}</div>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        // Initialize JENNi Edge with debug mode and mock data
+        document.addEventListener('DOMContentLoaded', async () => {
+            updateComponentStatus();
+            
+            try {
+                await JenniEdge.init({
+                    debug: true,
+                    forceMock: true,
+                    autoOpenPanel: false,
+                    zip: '60612'
+                });
+                
+                console.log('✅ JENNi Edge initialized with modular components');
+                console.log('Components available:', Object.keys(JenniEdge.components));
+                
+            } catch (error) {
+                console.error('❌ JENNi Edge initialization failed:', error);
+            }
+        });
+    </script>
+</body>
+</html>

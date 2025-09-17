@@ -1862,19 +1862,6 @@
       return sameDay ? `by ${when}` : `by ${when} tomorrow`;
     },
 
-    // Helper function to format delivery time consistently
-    formatDeliveryTime(etaMinutes) {
-      if (!etaMinutes || !Number.isFinite(etaMinutes)) return '~30 min';
-      
-      const mins = Math.round(etaMinutes);
-      const now = new Date();
-      const eta = new Date(now.getTime() + mins * 60000);
-      const sameDay = now.toDateString() === eta.toDateString();
-      const opts = { hour: 'numeric', minute: '2-digit' };
-      const when = eta.toLocaleTimeString([], opts);
-      return sameDay ? `by ${when}` : `by ${when} tomorrow`;
-    },
-
   async openPanel(){
       if (this.state.panelOpen) return;
       // Guard against site errors: reset flag on failure
@@ -2322,7 +2309,7 @@
               </div>
               <div class="jenni-order-item">
                 <span>Delivery Time:</span>
-                <span>${this.formatDeliveryTime(this.state.selectedStore.etaMinutes)}</span>
+                <span>~${Math.round(this.state.selectedStore.etaMinutes)} minutes</span>
               </div>
               <div class="jenni-order-item">
                 <span>Distance:</span>

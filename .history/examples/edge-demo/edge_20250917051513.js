@@ -21,7 +21,7 @@
 
       // Initialize components
       await this.initializeComponents();
-      
+
       this.injectStyles();
       this.installWatchers();
       this.run();
@@ -161,9 +161,9 @@
         const res = await fetch(`${base}/resolve`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload), signal: ac.signal });
         const data = await res.json();
         if (this.config.debug) {
-          try { 
+          try {
             console.log('[JenniEdge] Full resolve result:', data);
-            
+
             // Log fingerprint details
             if (data.product) {
               console.log('🔍 [JenniEdge] Product Fingerprint:', {
@@ -177,7 +177,7 @@
                 matchType: data.product.matchType
               });
             }
-            
+
             // Log nearby stores details
             if (data.nodes && data.nodes.length > 0) {
               console.log('🏪 [JenniEdge] Nearby Stores Found:', data.nodes.length);
@@ -195,7 +195,7 @@
           } else {
               console.log('🏪 [JenniEdge] No nearby stores found');
             }
-            
+
             // Log decision summary
             console.log('⚖️ [JenniEdge] Decision Summary:', {
               eligible: data.eligible,
@@ -737,280 +737,6 @@
           max-height: 60vh;
           overflow-y: auto;
         }
-        
-        .jenni-checkout-layout {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 24px;
-          min-height: 400px;
-        }
-        
-        .jenni-left-column {
-          display: flex;
-          flex-direction: column;
-          gap: 20px;
-        }
-        
-        .jenni-right-column {
-          display: flex;
-          flex-direction: column;
-          gap: 16px;
-        }
-        
-        /* Product Information Styles */
-        .jenni-product-info {
-          background: rgba(0, 122, 255, 0.05);
-          border: 1px solid rgba(0, 122, 255, 0.1);
-          border-radius: 12px;
-          padding: 16px;
-          display: flex;
-          gap: 12px;
-          align-items: flex-start;
-        }
-
-        .jenni-product-image {
-          width: 60px;
-          height: 60px;
-          border-radius: 8px;
-          background: rgba(0, 122, 255, 0.1);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          flex-shrink: 0;
-        }
-
-        .jenni-product-placeholder {
-          font-size: 24px;
-          opacity: 0.7;
-        }
-
-        .jenni-product-details {
-          flex: 1;
-          min-width: 0;
-        }
-
-        .jenni-product-name {
-          font-size: 16px;
-          font-weight: 700;
-          color: #1D1D1F;
-          margin-bottom: 4px;
-          line-height: 1.3;
-        }
-
-        .jenni-product-brand {
-          font-size: 14px;
-          color: #86868B;
-          font-weight: 500;
-          margin-bottom: 8px;
-        }
-
-        .jenni-store-info {
-          display: flex;
-          flex-direction: column;
-          gap: 2px;
-        }
-
-        .jenni-store-name {
-          font-size: 13px;
-          color: #007AFF;
-          font-weight: 600;
-        }
-
-        .jenni-delivery-time {
-          font-size: 12px;
-          color: #86868B;
-          font-weight: 500;
-        }
-
-        /* Pricing Card Styles */
-        .jenni-pricing-card {
-          background: rgba(255, 255, 255, 0.8);
-          border: 1px solid rgba(0, 0, 0, 0.08);
-          border-radius: 12px;
-          padding: 16px;
-        }
-
-        .jenni-pricing-title {
-          font-size: 16px;
-          font-weight: 600;
-          color: #1D1D1F;
-          margin-bottom: 12px;
-          letter-spacing: -0.01em;
-        }
-
-        .jenni-price-row {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          padding: 8px 0;
-          font-size: 14px;
-          color: #1D1D1F;
-        }
-
-        .jenni-price-row:not(:last-child) {
-          border-bottom: 1px solid rgba(0, 0, 0, 0.06);
-        }
-
-        .jenni-total-row {
-          font-size: 16px;
-          font-weight: 700;
-          padding-top: 12px;
-          color: #007AFF;
-        }
-
-        /* Compact Form Styles */
-        .jenni-compact-section {
-          margin-bottom: 16px;
-        }
-
-        .jenni-compact-input {
-          padding: 10px 14px;
-          font-size: 14px;
-        }
-
-        .jenni-form-row {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 12px;
-        }
-
-        /* Payment Options Styles */
-        .jenni-payment-options {
-          display: flex;
-          flex-direction: column;
-          gap: 8px;
-        }
-
-        .jenni-payment-option {
-          display: flex;
-          align-items: center;
-          gap: 12px;
-          padding: 12px;
-          border: 1px solid rgba(0, 0, 0, 0.08);
-          border-radius: 8px;
-          cursor: pointer;
-          transition: all 0.2s ease;
-          background: rgba(255, 255, 255, 0.6);
-        }
-
-        .jenni-payment-option:hover {
-          background: rgba(255, 255, 255, 0.8);
-          border-color: rgba(0, 0, 0, 0.12);
-        }
-
-        .jenni-payment-option.selected {
-          background: rgba(0, 122, 255, 0.08);
-          border-color: #007AFF;
-          box-shadow: 0 0 0 1px rgba(0, 122, 255, 0.2);
-        }
-
-        .jenni-payment-radio {
-          width: 18px;
-          height: 18px;
-          border: 2px solid rgba(0, 0, 0, 0.2);
-          border-radius: 50%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          flex-shrink: 0;
-          transition: all 0.2s ease;
-        }
-
-        .jenni-payment-option.selected .jenni-payment-radio {
-          border-color: #007AFF;
-        }
-
-        .jenni-radio-dot {
-          width: 8px;
-          height: 8px;
-          border-radius: 50%;
-          background: #007AFF;
-          transform: scale(0);
-          transition: transform 0.2s ease;
-        }
-
-        .jenni-payment-option.selected .jenni-radio-dot {
-          transform: scale(1);
-        }
-
-        .jenni-payment-card-info {
-          display: flex;
-          align-items: center;
-          gap: 10px;
-          flex: 1;
-        }
-
-        .jenni-payment-details {
-          flex: 1;
-        }
-
-        .jenni-payment-type {
-          font-size: 14px;
-          font-weight: 600;
-          color: #1D1D1F;
-          margin-bottom: 2px;
-        }
-
-        .jenni-payment-number {
-          font-size: 12px;
-          color: #86868B;
-          font-weight: 500;
-        }
-
-        .jenni-paypal-logo {
-          width: 32px;
-          height: 20px;
-          background: linear-gradient(135deg, #0070ba 0%, #003087 100%);
-          border-radius: 4px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          color: white;
-          font-size: 9px;
-          font-weight: bold;
-          letter-spacing: 0.5px;
-        }
-
-        .jenni-card-logos {
-          display: flex;
-          gap: 4px;
-        }
-
-        .jenni-visa-logo, .jenni-mc-logo {
-          width: 24px;
-          height: 16px;
-          border-radius: 2px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 8px;
-          font-weight: bold;
-          color: white;
-        }
-
-        .jenni-visa-logo {
-          background: linear-gradient(135deg, #1a1f71 0%, #0f4c8c 100%);
-        }
-
-        .jenni-mc-logo {
-          background: linear-gradient(135deg, #eb001b 0%, #f79e1b 100%);
-        }
-
-        /* Responsive Design */
-        @media (max-width: 640px) {
-          .jenni-checkout-layout {
-            grid-template-columns: 1fr;
-            gap: 20px;
-          }
-
-          .jenni-form-row {
-            grid-template-columns: 1fr;
-          }
-
-          .jenni-checkout-content {
-            max-width: 95%;
-          }
-        }
 
         .jenni-checkout-section {
           margin-bottom: 24px;
@@ -1276,387 +1002,6 @@
           font-size: 12px;
           color: #86868B;
         }
-        
-        /* Compact Checkout Modal Styles */
-        .jenni-compact-header {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          padding: 20px 24px;
-          border-bottom: 1px solid rgba(0, 0, 0, 0.08);
-          background: rgba(0, 122, 255, 0.03);
-        }
-
-        .jenni-header-left {
-          flex: 1;
-          min-width: 0;
-        }
-
-        .jenni-product-summary {
-          display: flex;
-          align-items: center;
-          gap: 12px;
-        }
-
-        .jenni-product-icon {
-          font-size: 24px;
-          flex-shrink: 0;
-        }
-
-        .jenni-product-info-compact {
-          min-width: 0;
-          flex: 1;
-        }
-
-        .jenni-product-name-compact {
-          font-size: 16px;
-          font-weight: 700;
-          color: #1D1D1F;
-          margin-bottom: 4px;
-          line-height: 1.2;
-        }
-
-        .jenni-product-meta {
-          display: flex;
-          flex-direction: column;
-          gap: 2px;
-        }
-
-        .jenni-brand-compact {
-          font-size: 13px;
-          color: #86868B;
-          font-weight: 500;
-        }
-
-        .jenni-delivery-compact {
-          font-size: 12px;
-          color: #007AFF;
-          font-weight: 600;
-        }
-
-        .jenni-header-right {
-          display: flex;
-          align-items: center;
-          gap: 20px;
-        }
-
-        .jenni-pricing-compact {
-          text-align: right;
-          min-width: 120px;
-        }
-
-        .jenni-price-line {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          gap: 16px;
-          margin-bottom: 4px;
-        }
-
-        .jenni-price-line:last-child {
-          margin-bottom: 0;
-        }
-
-        .jenni-price-label {
-          font-size: 13px;
-          color: #86868B;
-          font-weight: 500;
-        }
-
-        .jenni-price-value {
-          font-size: 14px;
-          font-weight: 600;
-          color: #1D1D1F;
-        }
-
-        .jenni-total-line {
-          padding-top: 6px;
-          border-top: 1px solid rgba(0, 0, 0, 0.1);
-          margin-top: 4px;
-        }
-
-        .jenni-total-line .jenni-price-label {
-          color: #1D1D1F;
-          font-weight: 600;
-        }
-
-        .jenni-total-amount {
-          font-size: 16px;
-          color: #007AFF;
-          font-weight: 700;
-        }
-
-        .jenni-checkout-body-compact {
-          padding: 20px 24px;
-          max-height: 50vh;
-          overflow-y: auto;
-        }
-
-        .jenni-form-section {
-          margin-bottom: 24px;
-        }
-
-        .jenni-form-section:last-child {
-          margin-bottom: 0;
-        }
-
-        .jenni-section-title {
-          font-size: 16px;
-          font-weight: 600;
-          color: #1D1D1F;
-          margin-bottom: 12px;
-          letter-spacing: -0.01em;
-        }
-
-        .jenni-form-grid {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 12px;
-          align-items: end;
-        }
-
-        .jenni-form-group-wide {
-          grid-column: span 2;
-        }
-
-        .jenni-form-group-small {
-          grid-column: span 1;
-        }
-
-        .jenni-form-group {
-          display: flex;
-          flex-direction: column;
-        }
-
-        .jenni-form-label-compact {
-          font-size: 12px;
-          font-weight: 500;
-          color: #48484A;
-          margin-bottom: 4px;
-          letter-spacing: 0.01em;
-        }
-
-        .jenni-form-input-compact {
-          padding: 10px 12px;
-          border: 1px solid rgba(0, 0, 0, 0.1);
-          border-radius: 8px;
-          font-size: 14px;
-          font-weight: 500;
-          color: #1D1D1F;
-          background: rgba(255, 255, 255, 0.8);
-          transition: all 0.2s ease;
-          font-family: inherit;
-        }
-
-        .jenni-form-input-compact:focus {
-          outline: none;
-          border-color: #007AFF;
-          background: rgba(255, 255, 255, 0.95);
-          box-shadow: 0 0 0 2px rgba(0, 122, 255, 0.1);
-        }
-
-        .jenni-form-input-compact.error {
-          border-color: #FF3B30;
-          background: rgba(255, 59, 48, 0.05);
-        }
-
-        .jenni-payment-compact {
-          display: flex;
-          gap: 8px;
-          flex-wrap: wrap;
-        }
-
-        .jenni-payment-option-compact {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          padding: 10px 12px;
-          border: 1px solid rgba(0, 0, 0, 0.08);
-          border-radius: 8px;
-          cursor: pointer;
-          transition: all 0.2s ease;
-          background: rgba(255, 255, 255, 0.6);
-          flex: 1;
-          min-width: 0;
-        }
-
-        .jenni-payment-option-compact:hover {
-          background: rgba(255, 255, 255, 0.8);
-          border-color: rgba(0, 0, 0, 0.12);
-        }
-
-        .jenni-payment-option-compact.selected {
-          background: rgba(0, 122, 255, 0.08);
-          border-color: #007AFF;
-          box-shadow: 0 0 0 1px rgba(0, 122, 255, 0.2);
-        }
-
-        .jenni-payment-radio-compact {
-          width: 16px;
-          height: 16px;
-          border: 2px solid rgba(0, 0, 0, 0.2);
-          border-radius: 50%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          flex-shrink: 0;
-          transition: all 0.2s ease;
-        }
-
-        .jenni-payment-option-compact.selected .jenni-payment-radio-compact {
-          border-color: #007AFF;
-        }
-
-        .jenni-radio-dot-compact {
-          width: 6px;
-          height: 6px;
-          border-radius: 50%;
-          background: #007AFF;
-          transform: scale(0);
-          transition: transform 0.2s ease;
-        }
-
-        .jenni-payment-option-compact.selected .jenni-radio-dot-compact {
-          transform: scale(1);
-        }
-
-        .jenni-amex-logo-compact, .jenni-paypal-logo-compact {
-          width: 28px;
-          height: 18px;
-          border-radius: 3px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 8px;
-          font-weight: bold;
-          color: white;
-          letter-spacing: 0.5px;
-          flex-shrink: 0;
-        }
-
-        .jenni-amex-logo-compact {
-          background: linear-gradient(135deg, #006FCF 0%, #0048A3 100%);
-        }
-
-        .jenni-paypal-logo-compact {
-          background: linear-gradient(135deg, #0070ba 0%, #003087 100%);
-        }
-
-        .jenni-card-logos-compact {
-          display: flex;
-          gap: 2px;
-          flex-shrink: 0;
-        }
-
-        .jenni-visa-logo-compact, .jenni-mc-logo-compact {
-          width: 20px;
-          height: 14px;
-          border-radius: 2px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 7px;
-          font-weight: bold;
-          color: white;
-        }
-
-        .jenni-visa-logo-compact {
-          background: linear-gradient(135deg, #1a1f71 0%, #0f4c8c 100%);
-        }
-
-        .jenni-mc-logo-compact {
-          background: linear-gradient(135deg, #eb001b 0%, #f79e1b 100%);
-        }
-
-        .jenni-payment-text {
-          display: flex;
-          flex-direction: column;
-          gap: 1px;
-          min-width: 0;
-          flex: 1;
-        }
-
-        .jenni-payment-type-compact {
-          font-size: 12px;
-          font-weight: 600;
-          color: #1D1D1F;
-          line-height: 1.2;
-        }
-
-        .jenni-payment-number-compact {
-          font-size: 11px;
-          color: #86868B;
-          font-weight: 500;
-          line-height: 1.2;
-        }
-
-        .jenni-checkout-footer-compact {
-          padding: 16px 24px;
-          border-top: 1px solid rgba(0, 0, 0, 0.08);
-          background: rgba(255, 255, 255, 0.1);
-        }
-
-        .jenni-checkout-submit-compact {
-          width: 100%;
-          background: linear-gradient(135deg, #007AFF 0%, #5856D6 100%);
-          color: white;
-          border: none;
-          border-radius: 12px;
-          padding: 14px 20px;
-          font-size: 16px;
-          font-weight: 600;
-          cursor: pointer;
-          transition: all 0.2s ease;
-          letter-spacing: -0.01em;
-        }
-
-        .jenni-checkout-submit-compact:hover {
-          transform: translateY(-1px);
-          box-shadow: 0 6px 20px rgba(0, 122, 255, 0.4);
-        }
-
-        .jenni-checkout-submit-compact:active {
-          transform: translateY(0);
-          transition: all 0.1s ease;
-        }
-
-        .jenni-checkout-submit-compact:disabled {
-          background: rgba(142, 142, 147, 0.3);
-          cursor: not-allowed;
-          transform: none;
-          box-shadow: none;
-        }
-
-        /* Responsive adjustments for compact layout */
-        @media (max-width: 640px) {
-          .jenni-compact-header {
-            flex-direction: column;
-            align-items: flex-start;
-            gap: 12px;
-          }
-
-          .jenni-header-right {
-            width: 100%;
-            justify-content: space-between;
-          }
-
-          .jenni-form-grid {
-            grid-template-columns: 1fr;
-          }
-
-          .jenni-form-group-wide,
-          .jenni-form-group-small {
-            grid-column: span 1;
-          }
-
-          .jenni-payment-compact {
-            flex-direction: column;
-          }
-
-          .jenni-payment-option-compact {
-            flex: none;
-          }
-        }
 
         /* Dark mode support */
         @media (prefers-color-scheme: dark) {
@@ -1708,73 +1053,6 @@
 
           .zip-input:focus {
             background: rgba(58, 58, 60, 0.95) !important;
-          }
-
-          /* Compact checkout dark mode */
-          .jenni-compact-header {
-            background: rgba(255, 255, 255, 0.03);
-            border-color: rgba(255, 255, 255, 0.08);
-          }
-
-          .jenni-product-name-compact {
-            color: #F2F2F7;
-          }
-
-          .jenni-brand-compact {
-            color: #AEAEB2;
-          }
-
-          .jenni-price-label {
-            color: #AEAEB2;
-          }
-
-          .jenni-price-value {
-            color: #F2F2F7;
-          }
-
-          .jenni-total-line .jenni-price-label {
-            color: #F2F2F7;
-          }
-
-          .jenni-section-title {
-            color: #F2F2F7;
-          }
-
-          .jenni-form-label-compact {
-            color: #AEAEB2;
-          }
-
-          .jenni-form-input-compact {
-            background: rgba(58, 58, 60, 0.8);
-            border-color: rgba(255, 255, 255, 0.1);
-            color: #F2F2F7;
-          }
-
-          .jenni-form-input-compact:focus {
-            background: rgba(58, 58, 60, 0.95);
-          }
-
-          .jenni-payment-option-compact {
-            background: rgba(58, 58, 60, 0.6);
-            border-color: rgba(255, 255, 255, 0.06);
-          }
-
-          .jenni-payment-option-compact:hover {
-            background: rgba(58, 58, 60, 0.8);
-            border-color: rgba(255, 255, 255, 0.1);
-          }
-
-          .jenni-payment-type-compact {
-            color: #F2F2F7;
-          }
-
-          .jenni-payment-number-compact {
-            color: #AEAEB2;
-          }
-
-          .jenni-checkout-footer-compact {
-            background: rgba(255, 255, 255, 0.03);
-            border-color: rgba(255, 255, 255, 0.08);
           }
         }
       `;
@@ -1862,19 +1140,6 @@
       return sameDay ? `by ${when}` : `by ${when} tomorrow`;
     },
 
-    // Helper function to format delivery time consistently
-    formatDeliveryTime(etaMinutes) {
-      if (!etaMinutes || !Number.isFinite(etaMinutes)) return '~30 min';
-      
-      const mins = Math.round(etaMinutes);
-      const now = new Date();
-      const eta = new Date(now.getTime() + mins * 60000);
-      const sameDay = now.toDateString() === eta.toDateString();
-      const opts = { hour: 'numeric', minute: '2-digit' };
-      const when = eta.toLocaleTimeString([], opts);
-      return sameDay ? `by ${when}` : `by ${when} tomorrow`;
-    },
-
   async openPanel(){
       if (this.state.panelOpen) return;
       // Guard against site errors: reset flag on failure
@@ -1933,9 +1198,9 @@
       };
       panel.querySelector('.zip-apply').onclick = applyZip;
       zipInput.addEventListener('keydown', (e)=>{ if (e.key==='Enter'){ e.preventDefault(); applyZip(); }});
-      
+
       // Removed fingerprint functionality
-      
+
   document.body.appendChild(panel);
   this.state.panelEl = panel;
       // Populate formula and nodes: prefer nodes from resolve payload, else fetch
@@ -2020,16 +1285,16 @@
           e.stopPropagation();
           this.selectStore(n, row);
         });
-        
+
         // Customer-friendly badges (only show in debug mode)
         const debugBadges = this.config.debug ? (() => {
           const pass = n.pgPass ?
             '<span style="margin-left:6px;font-size:11px;color:#155e75;background:#e0f2fe;border:1px solid #bae6fd;border-radius:6px;padding:2px 6px">✅ Pass</span>' :
             '<span style="margin-left:6px;font-size:11px;color:#92400e;background:#fffbeb;border:1px solid #fde68a;border-radius:6px;padding:2px 6px">⏸️ Hold</span>';
-          
+
           const productMatch = n.productMatch ?
             '<span style="margin-left:4px;font-size:10px;color:#059669;background:#d1fae5;border:1px solid #a7f3d0;border-radius:4px;padding:1px 4px">🎯 Product</span>' : '';
-          
+
           return pass + productMatch;
         })() : '';
 
@@ -2161,7 +1426,7 @@
           const r = (n)=> Number.isFinite(n)?Math.round(n):'-';
           formulaEl.textContent = `PDP $${r(pg.price)} → Buy $${r(pg.buy_cost||pg.landed_cost)} + Courier $${r(pg.courier_est)} + Fee $${r(pg.fee)} = Profit $${r(pg.margin)}`;
         }
-        
+
         // Removed fingerprint functionality
       } catch {}
     },
@@ -2279,8 +1544,6 @@
         this.components.checkoutModal = new CheckoutModal({
           selectedStore: this.state.selectedStore,
           userZip: this.config.zip,
-          productContext: this.state.data?.product || null,
-          debug: this.config.debug,
           onOrderComplete: (orderData) => {
             if (this.config.debug) {
               console.log('[JenniEdge] Order completed:', orderData);
@@ -2322,7 +1585,7 @@
               </div>
               <div class="jenni-order-item">
                 <span>Delivery Time:</span>
-                <span>${this.formatDeliveryTime(this.state.selectedStore.etaMinutes)}</span>
+                <span>~${Math.round(this.state.selectedStore.etaMinutes)} minutes</span>
               </div>
               <div class="jenni-order-item">
                 <span>Distance:</span>

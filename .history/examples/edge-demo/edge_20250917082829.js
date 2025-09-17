@@ -2322,7 +2322,7 @@
               </div>
               <div class="jenni-order-item">
                 <span>Delivery Time:</span>
-                <span>${this.formatDeliveryTime(this.state.selectedStore.etaMinutes)}</span>
+                <span>~${Math.round(this.state.selectedStore.etaMinutes)} minutes</span>
               </div>
               <div class="jenni-order-item">
                 <span>Distance:</span>
