@@ -91,50 +91,352 @@
       }
     },
 
-    // Removed client-side fingerprinting - now handled server-side only
     fingerprint() {
-      return {
-        url: location.href,
+      // Enhanced selector helper with priority and validation
+      const bySelectors = (selectors, validator = null) => {
+        for (const s of selectors) {
+          try {
+            const el = document.querySelector(s);
+            if (!el) continue;
+            
+            let value = el.getAttribute('content') || el.getAttribute('value') || 
+                       el.textContent || el.innerText || null;
+            
+            if (value) {
+              value = value.trim();
+              if (validator ? validator(value) : value) return value;
+            }
+          } catch {}
+        }
+        return null;
+      };
+
+      // GTIN/UPC/EAN validators
+      const isValidGtin = (v) => /^[0-9]{8,14}$/.test(v) && v.length >= 8;
+      const isValidSku = (v) => v && v.length >= 2 && v.length <= 100;
+
+      // Enhanced GTIN extraction (UPC, EAN, GTIN variants)
+      const gtin = bySelectors([
+        // Schema.org microdata
+        '[itemprop="gtin13"]', '[itemprop="gtin12"]', '[itemprop="gtin14"]', '[itemprop="gtin8"]', '[itemprop="gtin"]',
+        // Common data attributes
+        '[data-gtin]', '[data-gtin13]', '[data-gtin12]', '[data-upc]', '[data-ean]', '[data-barcode]',
+        // Form inputs
+        '[name="gtin"]', '[name="upc"]', '[name="ean"]', '[name="barcode"]',
+        // Meta tags
+        'meta[name="product:upc"]', 'meta[property="product:upc"]',
+        'meta[name="product:ean"]', 'meta[property="product:ean"]',
+        // Shopify specific
+        '[data-product-barcode]', '.product-barcode',
+        // WooCommerce
+        '.woocommerce-product-barcode', '[data-sku-barcode]',
+        // Generic class patterns
+        '.barcode', '.upc', '.ean', '.gtin'
+      ], isValidGtin);
+
+      // Enhanced SKU extraction
+      const sku = bySelectors([
+        // Schema.org
+        '[itemprop="sku"]', '[itemprop="model"]', '[itemprop="mpn"]',
+        // Data attributes (prioritized)
+        '[data-sku]', '[data-product-sku]', '[data-variant-sku]', '[data-model]', '[data-mpn]',
+        // Selected variant (common pattern)
+        'select[name="id"] option:checked', 'input[name="id"]:checked',
+        '.variant-sku.selected', '.selected-variant [data-sku]',
+        // Form inputs
+        '[name="sku"]', '[name="model"]', '[name="mpn"]', '[name="product_id"]',
+        // Meta tags
+        'meta[name="product:sku"]', 'meta[property="product:sku"]',
+        'meta[name="product:model"]', 'meta[property="product:model"]',
+        // Platform specific
+        '[data-shopify-sku]', '[data-wc-sku]', '[data-magento-sku]',
+        // Class patterns
+        '.product-sku', '.sku', '.model-number', '.part-number'
+      ], isValidSku);
+
+      // Enhanced title extraction
+      let title = bySelectors([
+        'meta[property="og:title"]',
+        'meta[name="twitter:title"]', 
+        'meta[name="title"]',
+        'h1.product-title', 'h1.product-name', 'h1[itemprop="name"]',
+        '.product-title h1', '.product-name h1',
+        'h1'
+      ]) || document.title;
+      
+      // Clean up Amazon titles
+      if (title && (title.toLowerCase().includes('amazon.com') || window.location.href.toLowerCase().includes('amazon.com'))) {
+        title = title.replace(/amazon\.com \:/gi, '').trim();
+        const lastColonIndex = title.lastIndexOf(':');
+        if (lastColonIndex !== -1) {
+          title = title.substring(0, lastColonIndex).trim();
+        }
+      }
+
+      // Enhanced brand extraction
+      let brand = bySelectors([
+        // Schema.org
+        '[itemprop="brand"]', 
+        // Meta tags
+        'meta[property="product:brand"]', 'meta[name="product:brand"]',
+        'meta[property="og:brand"]', 'meta[name="brand"]',
+        // Data attributes
+        '[data-brand]', '[data-product-brand]', '[data-manufacturer]',
+        // Form inputs
+        '[name="brand"]', '[name="manufacturer"]',
+        // Class patterns
+        '.product-brand', '.brand-name', '.manufacturer',
+        '.product-details .brand', '.product-info .brand'
+      ]);
+
+      // Product ID extraction
+      const productId = bySelectors([
+        '[data-product-id]', '[data-productid]', '[data-id]',
+        'meta[name="product:id"]', 'meta[property="product:id"]',
+        '[name="product_id"]', '[name="id"]',
+        '.product-id', '#product-id'
+      ]);
+
+      // Enhanced JSON-LD parsing with better error handling and nesting support
+      const ld = { gtin13: null, gtin12: null, gtin: null, sku: null, brand: null, name: null, offers: null, mpn: null };
+      try {
+        const scripts = Array.from(document.querySelectorAll('script[type="application/ld+json"]'));
+        for (const sc of scripts) {
+          try {
+            const jsonText = sc.textContent || sc.innerHTML || '';
+            if (!jsonText.trim()) continue;
+            
+            let json = JSON.parse(jsonText);
+            const arr = Array.isArray(json) ? json : [json];
+            
+            for (const node of arr) {
+              this.extractFromJsonLdNode(node, ld);
+            }
+          } catch (e) {
+            if (this.config.debug) console.log('[JenniEdge] JSON-LD parse error:', e);
+          }
+        }
+      } catch {}
+
+      // Priority resolution with validation
+      const strongGtin = ld.gtin13 || ld.gtin12 || ld.gtin || gtin || null;
+      const strongSku = ld.sku || ld.mpn || sku || null;
+      const strongTitle = ld.name || title || null;
+      brand = ld.brand || brand || this.extractBrandFromTitle(strongTitle) || null;
+
+      // Enhanced style code extraction (URL + content)
+      let styleCode = this.extractStyleCode();
+      
+      // Price extraction from current page state
+      const price = this.extractCurrentPrice();
+
+      // Variant detection
+      const variant = this.detectSelectedVariant();
+
+      return { 
+        url: location.href, 
+        title: strongTitle, 
+        brand, 
+        sku: strongSku, 
+        gtin: strongGtin, 
+        styleCode, 
+        productId, 
+        price,
+        variant,
+        ld,
         timestamp: Date.now(),
-        userAgent: navigator.userAgent.split(' ')[0]
+        userAgent: navigator.userAgent.split(' ')[0] // First part for debugging
       };
     },
 
-    // Removed - fingerprinting now handled server-side
+    // Helper: Extract from JSON-LD node recursively
+    extractFromJsonLdNode(node, ld) {
+      if (!node || typeof node !== 'object') return;
+      
+      const type = (node['@type'] || node.type || '').toString().toLowerCase();
+      
+      if (type.includes('product') || type.includes('offer')) {
+        // Basic properties
+        ld.name = ld.name || node.name || null;
+        ld.sku = ld.sku || node.sku || null;
+        ld.mpn = ld.mpn || node.mpn || null;
+        
+        // GTIN variants
+        ld.gtin13 = ld.gtin13 || node.gtin13 || null;
+        ld.gtin12 = ld.gtin12 || node.gtin12 || null;  
+        ld.gtin = ld.gtin || node.gtin || node.gtin14 || node.gtin8 || null;
+        
+        // Brand handling (string or object)
+        if (node.brand && !ld.brand) {
+          if (typeof node.brand === 'string') {
+            ld.brand = node.brand;
+          } else if (node.brand.name) {
+            ld.brand = node.brand.name;
+          } else if (node.brand['@type'] && node.brand['@type'].includes('Brand')) {
+            ld.brand = node.brand.name || node.brand.alternateName || null;
+          }
+        }
+        
+        // Offers handling
+        if (node.offers && !ld.offers) {
+          ld.offers = node.offers;
+        }
+      }
+      
+      // Recursive search in nested objects/arrays
+      for (const [key, value] of Object.entries(node)) {
+        if (key.startsWith('@')) continue; // Skip JSON-LD metadata
+        
+        if (Array.isArray(value)) {
+          value.forEach(item => this.extractFromJsonLdNode(item, ld));
+        } else if (typeof value === 'object' && value !== null) {
+          this.extractFromJsonLdNode(value, ld);
+        }
+      }
+    },
 
-    // Removed - fingerprinting now handled server-side
+    // Enhanced brand extraction from title
+    extractBrandFromTitle(title) {
+      if (!title) return null;
+      
+      // Common brand patterns in titles
+      const brandPatterns = [
+        /^([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)\s+/,  // "Nike Air" or "Under Armour"
+        /\b([A-Z]{2,})\b/,                        // "ADIDAS", "PUMA"
+        /\b(Nike|Adidas|Puma|Reebok|Jordan|Converse|Vans|New Balance|ASICS|Skechers|Fila|Champion|Under Armour|Timberland|Crocs)\b/i
+      ];
+      
+      for (const pattern of brandPatterns) {
+        const match = title.match(pattern);
+        if (match && match[1]) {
+          return match[1];
+        }
+      }
+      
+      return null;
+    },
 
-    // Removed - fingerprinting now handled server-side
+    // Enhanced style code extraction
+    extractStyleCode() {
+      // URL-based style code extraction
+      const urlPatterns = [
+        /\/([A-Z0-9]{4,}-[0-9]{3})\//i,           // "/ABC123-456/"
+        /[\/-]([A-Z]{2,}[0-9]{2,}[A-Z0-9]*)/i,   // "ABC123DEF"
+        /product[\/\-]([A-Z0-9\-]{6,})/i          // "product/ABC-123-DEF"
+      ];
+      
+      for (const pattern of urlPatterns) {
+        const match = location.href.match(pattern);
+        if (match && match[1]) return match[1];
+      }
+      
+      // DOM-based style code extraction
+      const styleSelectors = [
+        '[data-style-code]', '[data-style]', '[data-model-code]',
+        'meta[name="product:style"]', 'meta[property="product:style"]',
+        '.style-code', '.model-code', '.product-code'
+      ];
+      
+      for (const selector of styleSelectors) {
+        try {
+          const el = document.querySelector(selector);
+          if (el) {
+            const value = el.getAttribute('content') || el.getAttribute('value') || 
+                         el.textContent || el.innerText;
+            if (value && value.trim()) return value.trim();
+          }
+        } catch {}
+      }
+      
+      return null;
+    },
 
-    // Removed - fingerprinting now handled server-side
+    // Enhanced price extraction
+    extractCurrentPrice() {
+      const priceSelectors = [
+        // Schema.org microdata
+        '[itemprop="price"]', '[itemprop="lowPrice"]', '[itemprop="highPrice"]',
+        // Common price classes
+        '.price', '.product-price', '.current-price', '.sale-price',
+        '.price-current', '.price-now', '.offer-price',
+        // Data attributes
+        '[data-price]', '[data-product-price]', '[data-sale-price]',
+        // Meta tags
+        'meta[property="product:price:amount"]', 'meta[name="product:price"]'
+      ];
+      
+      for (const selector of priceSelectors) {
+        try {
+          const el = document.querySelector(selector);
+          if (!el) continue;
+          
+          let priceText = el.getAttribute('content') || el.getAttribute('value') || 
+                         el.textContent || el.innerText;
+          
+          if (priceText) {
+            // Extract numeric price
+            const match = priceText.match(/[\d,]+\.?\d*/);
+            if (match) {
+              const price = parseFloat(match[0].replace(/,/g, ''));
+              if (price > 0) return price;
+            }
+          }
+        } catch {}
+      }
+      
+      return null;
+    },
 
-    // Removed - fingerprinting now handled server-side
-
-    // Removed - fingerprinting now handled server-side
-
-    // Removed - fingerprinting now handled server-side
-
-    // Removed - fingerprinting now handled server-side
-
-    // Removed - fingerprinting now handled server-side
-
-    // Removed - fingerprinting now handled server-side
-
-    // Removed - fingerprinting now handled server-side
-
-    // Removed - fingerprinting now handled server-side
-
-    // Removed - fingerprinting now handled server-side
-
-    // Removed - fingerprinting now handled server-side
-
-    // Removed - fingerprinting now handled server-side
-
-    // Removed - fingerprinting now handled server-side
-
-    // Removed - fingerprinting now handled server-side
-
-    // Removed - fingerprinting now handled server-side
+    // Enhanced variant detection
+    detectSelectedVariant() {
+      const variant = {};
+      
+      // Size detection
+      const sizeSelectors = [
+        'select[name*="size"] option:checked',
+        'input[name*="size"]:checked',
+        '.size-selector .selected',
+        '.variant-size.selected',
+        '[data-selected-size]'
+      ];
+      
+      for (const selector of sizeSelectors) {
+        try {
+          const el = document.querySelector(selector);
+          if (el) {
+            const size = el.textContent || el.value || el.getAttribute('data-selected-size');
+            if (size && size.trim()) {
+              variant.size = size.trim();
+              break;
+            }
+          }
+        } catch {}
+      }
+      
+      // Color detection
+      const colorSelectors = [
+        'select[name*="color"] option:checked',
+        'input[name*="color"]:checked',
+        '.color-selector .selected',
+        '.variant-color.selected',
+        '[data-selected-color]'
+      ];
+      
+      for (const selector of colorSelectors) {
+        try {
+          const el = document.querySelector(selector);
+          if (el) {
+            const color = el.textContent || el.value || el.getAttribute('data-selected-color');
+            if (color && color.trim()) {
+              variant.color = color.trim();
+              break;
+            }
+          }
+        } catch {}
+      }
+      
+      return Object.keys(variant).length > 0 ? variant : null;
+    },
 
     // Removed - fingerprinting now handled server-side
 
@@ -155,7 +457,13 @@
         this.state.inFlightAbort = ac;
         if (this.state.inFlightTimer) clearTimeout(this.state.inFlightTimer);
         this.state.inFlightTimer = setTimeout(() => { try { ac.abort(); } catch {} }, this.config.requestTimeoutMs || 6000);
-        const payload = { tenant: this.config.tenant, zip: this.config.zip, url: location.href };
+        const fingerprint = this.fingerprint();
+        const payload = { 
+          tenant: this.config.tenant, 
+          zip: this.config.zip, 
+          url: location.href,
+          fingerprint: fingerprint
+        };
         if (this.config.debug) { try { console.log('[JenniEdge] resolve payload', payload); } catch {} }
         const base = this.config.apiBase || '';
         const res = await fetch(`${base}/resolve`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload), signal: ac.signal });
@@ -1972,8 +2280,8 @@
       // If no API base or forceMock, synthesize nodes
       if (!this.config.apiBase || this.config.forceMock){
         const base = [
-          { id: 'demo_1', name: 'Downtown', etaMinutes: 90, distanceMiles: 3.2, stock: 7 },
-          { id: 'demo_2', name: 'Uptown', etaMinutes: 120, distanceMiles: 5.1, stock: 4 },
+          { id: 'demo_1', name: 'Downtown', address: '123 Main St, Downtown', etaMinutes: 90, distanceMiles: 3.2, stock: 7 },
+          { id: 'demo_2', name: 'Uptown', address: '456 Oak Ave, Uptown', etaMinutes: 120, distanceMiles: 5.1, stock: 4 },
         ];
         return base;
       }
@@ -2106,6 +2414,9 @@
         const storeInfo = [];
         if (n.distanceMiles) storeInfo.push(`${Math.round(n.distanceMiles * 10) / 10} mi away`);
         if (n.etaMinutes) storeInfo.push(`~${Math.round(n.etaMinutes)} min delivery`);
+        
+        // Address as separate smaller text
+        const addressInfo = n.address || null;
 
         // Debug info (only show in debug mode)
         const debugInfo = this.config.debug ? [
@@ -2116,6 +2427,7 @@
         row.innerHTML = `
           <div style="flex: 1;">
             <div class="name">${nameHtml}${debugBadges}</div>
+            ${addressInfo ? `<div class="meta" style="font-size:12px;color:#6b7280;">${addressInfo}</div>` : ''}
             <div class="meta">${storeInfo.join(' • ')}</div>
             ${debugInfo.map(info => `<div class="meta" style="font-size:11px;color:#6b7280;">${info}</div>`).join('')}
           </div>
@@ -2321,8 +2633,8 @@
                 <span>${this.state.selectedStore.name}</span>
               </div>
               <div class="jenni-order-item">
-                <span>Delivery Time:</span>
-                <span>${this.formatDeliveryTime(this.state.selectedStore.etaMinutes)}</span>
+                <span>Estimated delivery time:</span>
+                <span>${this.formatDeliveryTime(this.state.selectedStore.etaMinutes + 60000)}</span>
               </div>
               <div class="jenni-order-item">
                 <span>Distance:</span>
@@ -2516,14 +2828,14 @@
               <div class="jenni-step-indicator active">2</div>
               <div class="jenni-step-text">
                 <div class="jenni-step-title">Preparing at ${this.state.selectedStore.name}</div>
-                <div class="jenni-step-time">5-10 minutes</div>
+                <div class="jenni-step-time">5-15 minutes</div>
               </div>
             </div>
             <div class="jenni-tracking-step">
               <div class="jenni-step-indicator pending">3</div>
               <div class="jenni-step-text">
                 <div class="jenni-step-title">Out for Delivery</div>
-                <div class="jenni-step-time">${Math.round(this.state.selectedStore.etaMinutes * 0.7)} minutes</div>
+                <div class="jenni-step-time">${Math.round(this.state.selectedStore.etaMinutes )} minutes</div>
               </div>
             </div>
             <div class="jenni-tracking-step">

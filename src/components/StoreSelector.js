@@ -71,6 +71,7 @@ class StoreSelector {
     row.innerHTML = `
       <div style="flex: 1;">
         <div class="name">${storeInfo.nameHtml}${debugBadges}</div>
+        ${storeInfo.addressInfo ? `<div class="meta" style="font-size:12px;color:#6b7280;">${storeInfo.addressInfo}</div>` : ''}
         <div class="meta">${storeInfo.metaInfo.join(' • ')}</div>
         ${debugInfo.map(info => `<div class="meta" style="font-size:11px;color:#6b7280;">${info}</div>`).join('')}
       </div>
@@ -99,8 +100,11 @@ class StoreSelector {
     const metaInfo = [];
     if (store.distanceMiles) metaInfo.push(`${Math.round(store.distanceMiles * 10) / 10} mi away`);
     if (store.etaMinutes) metaInfo.push(`~${Math.round(store.etaMinutes)} min delivery`);
+    
+    // Add address as a separate smaller text element
+    const addressInfo = store.address ? store.address : null;
 
-    return { nameHtml, metaInfo };
+    return { nameHtml, metaInfo, addressInfo };
   }
 
   /**

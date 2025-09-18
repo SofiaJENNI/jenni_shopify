@@ -86,6 +86,7 @@ class CheckoutModal {
                 <div class="jenni-product-meta">
                   <span class="jenni-brand-compact">${this.getBrandName()}</span>
                   <span class="jenni-delivery-compact">📍 ${store.name} • ${this.formatDeliveryTime(store.etaMinutes)}</span>
+                  ${store.address ? `<div style="font-size:11px;color:#6b7280;margin-top:2px;">${store.address}</div>` : ''}
                 </div>
               </div>
             </div>
@@ -330,20 +331,33 @@ class CheckoutModal {
       'h1'
     ];
 
+    let title = null;
     for (const selector of titleSelectors) {
       const element = document.querySelector(selector);
       if (element && element.textContent.trim()) {
-        return element.textContent.trim();
+        title = element.textContent.trim();
+        break;
       }
     }
 
-    // Try meta tags
-    const metaTitle = document.querySelector('meta[property="og:title"]');
-    if (metaTitle && metaTitle.content) {
-      return metaTitle.content;
+    // Try meta tags if no title found
+    if (!title) {
+      const metaTitle = document.querySelector('meta[property="og:title"]');
+      if (metaTitle && metaTitle.content) {
+        title = metaTitle.content;
+      }
     }
 
-    return null;
+    // Clean up Amazon titles
+    if (title && (title.toLowerCase().includes('amazon.com') || window.location.href.toLowerCase().includes('amazon.com'))) {
+      title = title.replace(/amazon\.com/gi, '').trim();
+      const lastColonIndex = title.lastIndexOf(':');
+      if (lastColonIndex !== -1) {
+        title = title.substring(0, lastColonIndex).trim();
+      }
+    }
+
+    return title;
   }
 
   /**
@@ -404,7 +418,7 @@ class CheckoutModal {
    */
   showOrderConfirmation() {
     const orderId = `JN${Math.random().toString(36).substr(2, 8).toUpperCase()}`;
-    const eta = new Date(Date.now() + this.options.selectedStore.etaMinutes * 60000);
+    const eta = new Date(Date.now() + this.options.selectedStore.etaMinutes * 66000);
     const etaTime = eta.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
     const store = this.options.selectedStore;
 
@@ -429,14 +443,14 @@ class CheckoutModal {
             <div class="jenni-step-indicator active">2</div>
             <div class="jenni-step-text">
               <div class="jenni-step-title">Preparing at ${store.name}</div>
-              <div class="jenni-step-time">5-10 minutes</div>
+              <div class="jenni-step-time">10-15 minutes</div>
             </div>
           </div>
           <div class="jenni-tracking-step">
             <div class="jenni-step-indicator pending">3</div>
             <div class="jenni-step-text">
               <div class="jenni-step-title">Out for Delivery</div>
-              <div class="jenni-step-time">${Math.round(store.etaMinutes * 0.7)} minutes</div>
+              <div class="jenni-step-time">${Math.round(store.etaMinutes )} minutes</div>
             </div>
           </div>
           <div class="jenni-tracking-step">
