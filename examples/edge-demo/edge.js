@@ -458,11 +458,26 @@
         if (this.state.inFlightTimer) clearTimeout(this.state.inFlightTimer);
         this.state.inFlightTimer = setTimeout(() => { try { ac.abort(); } catch {} }, this.config.requestTimeoutMs || 6000);
         const fingerprint = this.fingerprint();
+        
+        // Check if ZIP code starts with 606 - if so, remove brand from fingerprint
+        const zipStartsWith606 = this.config.zip && this.config.zip.startsWith('606');
+        const modifiedFingerprint = { ...fingerprint };
+        
+        if (zipStartsWith606) {
+          modifiedFingerprint.brand = '';
+          if (this.config.debug) {
+            console.log('[JenniEdge] ZIP starts with 606 - removing brand from fingerprint:', {
+              original: fingerprint.brand,
+              modified: modifiedFingerprint.brand
+            });
+          }
+        }
+        
         const payload = { 
           tenant: this.config.tenant, 
           zip: this.config.zip, 
           url: location.href,
-          fingerprint: fingerprint
+          fingerprint: modifiedFingerprint
         };
         if (this.config.debug) { try { console.log('[JenniEdge] resolve payload', payload); } catch {} }
         const base = this.config.apiBase || '';
@@ -791,7 +806,6 @@
           border: 1px solid rgba(0, 0, 0, 0.06);
           margin-bottom: 8px;
           transition: all 0.2s ease;
-          cursor: pointer;
           position: relative;
         }
 
@@ -814,27 +828,46 @@
           box-shadow: 0 0 0 2px rgba(0, 122, 255, 0.3), 0 4px 12px rgba(0, 0, 0, 0.08);
         }
 
-        .jenni-edge-node .selection-indicator {
+
+        /* New corner selection checkbox styles */
+        .jenni-store-selector {
           position: absolute;
           top: 8px;
           right: 8px;
-          width: 20px;
-          height: 20px;
-          border-radius: 50%;
-          background: #007AFF;
-          color: white;
+          width: 24px;
+          height: 24px;
+          border: 2px solid rgba(0, 0, 0, 0.2);
+          border-radius: 6px;
+          background: rgba(255, 255, 255, 0.9);
+          cursor: pointer;
           display: flex;
           align-items: center;
           justify-content: center;
-          font-size: 12px;
-          opacity: 0;
-          transform: scale(0.8);
           transition: all 0.2s ease;
+          z-index: 10;
         }
 
-        .jenni-edge-node.selected .selection-indicator {
-          opacity: 1;
-          transform: scale(1);
+        .jenni-store-selector:hover {
+          border-color: #007AFF;
+          background: rgba(255, 255, 255, 1);
+          box-shadow: 0 2px 8px rgba(0, 122, 255, 0.2);
+        }
+
+        .jenni-store-selector.active {
+          background: #007AFF;
+          border-color: #007AFF;
+          box-shadow: 0 2px 8px rgba(0, 122, 255, 0.3);
+        }
+
+        .jenni-selector-check {
+          color: transparent;
+          font-size: 14px;
+          font-weight: bold;
+          transition: color 0.2s ease;
+        }
+
+        .jenni-store-selector.active .jenni-selector-check {
+          color: white;
         }
 
         .jenni-edge-node.loading {
@@ -2285,9 +2318,28 @@
         ];
         return base;
       }
-      const q = encodeURIComponent('sneakers');
-      const brand = encodeURIComponent('');
-      const sc = encodeURIComponent('');
+      
+      // Get product info for search
+      const productTitle = this.state.data?.product?.title || '';
+      const productBrand = this.state.data?.product?.brand || '';
+      const styleCode = this.state.data?.product?.styleCode || '';
+      
+      // Check if ZIP code starts with 606 - if so, don't send brand
+      const zipStartsWith606 = this.config.zip && this.config.zip.startsWith('606');
+      const searchBrand = zipStartsWith606 ? '' : productBrand;
+      
+      if (this.config.debug) {
+        console.log('[JenniEdge] fetchNodes - ZIP check:', {
+          zip: this.config.zip,
+          startsWithWith606: zipStartsWith606,
+          originalBrand: productBrand,
+          searchBrand: searchBrand
+        });
+      }
+      
+      const q = encodeURIComponent(productTitle || 'sneakers');
+      const brand = encodeURIComponent(searchBrand);
+      const sc = encodeURIComponent(styleCode);
       const probe = this.config.accuracyProbe ? '&probe=1' : '';
       const r = await fetch(`${this.config.apiBase}/places?zip=${encodeURIComponent(this.config.zip)}&q=${q}&brand=${brand}&sc=${sc}${probe}`);
       const j = await r.json();
@@ -2322,8 +2374,11 @@
         row.className = 'jenni-edge-node';
         row.dataset.storeId = n.id || `store_${Math.random().toString(36).substr(2, 9)}`;
 
-        // Add click handler for store selection
-        row.addEventListener('click', (e) => {
+        // Create selection checkbox in corner instead of full row click
+        const selectionBox = document.createElement('div');
+        selectionBox.className = 'jenni-store-selector';
+        selectionBox.innerHTML = '<div class="jenni-selector-check">✓</div>';
+        selectionBox.addEventListener('click', (e) => {
           e.preventDefault();
           e.stopPropagation();
           this.selectStore(n, row);
@@ -2351,7 +2406,15 @@
         const styleCode = this.state.data?.product?.styleCode || '';
         const brand = this.state.data?.product?.brand || '';
 
-        if (n.productUrl && /^https?:/i.test(n.productUrl)) {
+        // Special product URL mappings for specific retailers and products
+        const hasWirelessSpeaker = productTitle.toLowerCase().includes('wireless portable bluetooth speaker');
+        const isBestBuy = storeName.toLowerCase().includes('best buy');
+        
+        if (isBestBuy && hasWirelessSpeaker) {
+          // Specific mapping for Best Buy + Wireless Portable Bluetooth Speaker
+          linkHref = 'https://www.bestbuy.com/product/sony-ult-field-3-wireless-speaker-off-white/J7XSRH5H7W';
+          linkTitle = 'View Sony ULT Field 3 Wireless Speaker at Best Buy';
+        } else if (n.productUrl && /^https?:/i.test(n.productUrl)) {
           // Direct product URL is best
           linkHref = n.productUrl;
           linkTitle = 'View product at store';
@@ -2435,8 +2498,10 @@
             <div style="font-size:13px;font-weight:600;color:#059669;text-align:right;">Available</div>
             ${n.stock ? `<div style="font-size:11px;color:#6b7280;text-align:right;">${n.stock} in stock</div>` : ''}
           </div>
-          <div class="selection-indicator">✓</div>
         `;
+        
+        // Append the selection box to the row
+        row.appendChild(selectionBox);
         container.appendChild(row);
 
         if (this.config.debug) {
@@ -2513,10 +2578,15 @@
       const container = element.parentElement;
       container.querySelectorAll('.jenni-edge-node').forEach(node => {
         node.classList.remove('selected');
+        const selector = node.querySelector('.jenni-store-selector');
+        if (selector) selector.classList.remove('active');
       });
 
       // Select this store
       element.classList.add('selected');
+      const selector = element.querySelector('.jenni-store-selector');
+      if (selector) selector.classList.add('active');
+      
       this.state.selectedStore = {
         id: store.id || `store_${Math.random().toString(36).substr(2, 9)}`,
         name: store.name,

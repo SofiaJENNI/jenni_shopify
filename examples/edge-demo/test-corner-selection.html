@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JENNi Edge - Corner Selection Test</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+    }
+    
+    .demo-container {
+      max-width: 800px;
+      margin: 0 auto;
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      padding: 30px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    
+    .demo-title {
+      color: white;
+      font-size: 28px;
+      font-weight: 700;
+      text-align: center;
+      margin-bottom: 10px;
+      letter-spacing: -0.02em;
+    }
+    
+    .demo-subtitle {
+      color: rgba(255, 255, 255, 0.8);
+      font-size: 16px;
+      text-align: center;
+      margin-bottom: 30px;
+      line-height: 1.4;
+    }
+    
+    .demo-instructions {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 20px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    
+    .demo-instructions h3 {
+      color: white;
+      margin-top: 0;
+      margin-bottom: 15px;
+      font-size: 18px;
+    }
+    
+    .demo-instructions ul {
+      color: rgba(255, 255, 255, 0.9);
+      margin: 0;
+      padding-left: 20px;
+    }
+    
+    .demo-instructions li {
+      margin-bottom: 8px;
+      line-height: 1.4;
+    }
+    
+    .highlight {
+      background: rgba(255, 255, 255, 0.2);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+  <div class="demo-container">
+    <h1 class="demo-title">JENNi Edge - Corner Selection</h1>
+    <p class="demo-subtitle">
+      Test the new corner selection functionality where retailer names are clickable links
+      and store selection happens via a corner checkbox.
+    </p>
+    
+    <div class="demo-instructions">
+      <h3>How to Test:</h3>
+      <ul>
+        <li>Click the <span class="highlight">JENNi pill</span> that appears in the bottom-right corner</li>
+        <li>In the panel, notice each store has a <span class="highlight">checkbox in the top-right corner</span></li>
+        <li>Click the <span class="highlight">checkbox</span> to select a store (not the entire row)</li>
+        <li>Click the <span class="highlight">retailer name</span> to visit their website or search for the product</li>
+        <li><strong>Special:</strong> Click <span class="highlight">"Best Buy"</span> to see the specific Sony ULT Field 3 product page</li>
+        <li>Selected stores will show a <span class="highlight">blue checkmark</span> in the corner</li>
+        <li>Try the <span class="highlight">"Deliver with JENNi"</span> button to see the checkout flow</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Load the updated JENNi Edge script -->
+  <script src="edge.js"></script>
+  
+  <script>
+    // Initialize JENNi Edge with mock data for testing
+    document.addEventListener('DOMContentLoaded', async function() {
+      try {
+        await window.JenniEdge.init({
+          tenant: 'demo',
+          zip: '60612',
+          debug: true,
+          forceMock: true,
+          autoOpenPanel: false,
+          mockData: {
+            eligible: true,
+            etaMinutes: 90,
+            node_count: 3,
+            matching_score: 0.9,
+            nodes: [
+              {
+                id: 'target_001',
+                name: 'Target',
+                address: '123 Michigan Ave, Chicago, IL 60612',
+                etaMinutes: 85,
+                distanceMiles: 2.3,
+                stock: 5,
+                website: 'https://target.com',
+                productUrl: null,
+                margin: 15.50,
+                floor: 12.00,
+                pgPass: true,
+                productMatch: false,
+                score: 0.82
+              },
+              {
+                id: 'bestbuy_001',
+                name: 'Best Buy',
+                address: '456 State St, Chicago, IL 60612',
+                etaMinutes: 110,
+                distanceMiles: 3.7,
+                stock: 3,
+                website: 'https://bestbuy.com',
+                productUrl: null, // Will be overridden by special mapping
+                margin: 18.25,
+                floor: 12.00,
+                pgPass: true,
+                productMatch: true,
+                score: 0.95
+              },
+              {
+                id: 'walmart_001',
+                name: 'Walmart',
+                address: '789 Roosevelt Rd, Chicago, IL 60612',
+                etaMinutes: 95,
+                distanceMiles: 2.8,
+                stock: 6,
+                website: 'https://walmart.com',
+                productUrl: null,
+                margin: 16.75,
+                floor: 12.00,
+                pgPass: true,
+                productMatch: false,
+                score: 0.78
+              }
+            ],
+            product: {
+              title: 'Sony ULT Field 3 Wireless Portable Bluetooth Speaker',
+              brand: 'Sony',
+              sku: 'ULT-FIELD-3-001',
+              gtin: '027242925854',
+              styleCode: 'ULTF3-WHT-001',
+              price: 199.99
+            }
+          }
+        });
+        
+        console.log('✅ JENNi Edge initialized successfully with corner selection feature');
+      } catch (error) {
+        console.error('❌ Failed to initialize JENNi Edge:', error);
+      }
+    });
+  </script>
+</body>
+</html>

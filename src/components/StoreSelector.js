@@ -108,6 +108,31 @@ class StoreSelector {
   }
 
   /**
+   * Clean product title by removing Amazon.com and text after last colon
+   * @private
+   */
+  cleanProductTitle(title) {
+    if (!title) return '';
+    
+    let cleanTitle = title;
+    
+    // Remove text after last colon FIRST (Amazon-style titles)
+    const lastColonIndex = cleanTitle.lastIndexOf(':');
+    if (lastColonIndex !== -1) {
+      cleanTitle = cleanTitle.substring(0, lastColonIndex).trim();
+    }
+    
+    // THEN remove Amazon.com and any Amazon references
+    const hadAmazon = title.toLowerCase().includes('amazon');
+    cleanTitle = cleanTitle.replace(/amazon\.com/gi, '').replace(/amazon/gi, '').trim();
+    
+    // If original had Amazon, we need to clean up brand references too
+    // This will be handled in generateStoreLink where we check shouldIgnoreBrand
+    
+    return cleanTitle;
+  }
+
+  /**
    * Generate smart link for store
    * @private
    */
@@ -117,15 +142,31 @@ class StoreSelector {
     const storeName = store.name;
     
     // Get product info for search (would come from parent context)
-    const productTitle = this.options.productTitle || '';
+    const rawProductTitle = this.options.productTitle || '';
     const styleCode = this.options.styleCode || '';
     const brand = this.options.brand || '';
+    
+    // Clean the product title
+    let productTitle = this.cleanProductTitle(rawProductTitle);
+    
+    // Check if original title contains Amazon to decide whether to include brand
+    const shouldIgnoreBrand = rawProductTitle.toLowerCase().includes('amazon');
+    
+    // If Amazon product, also remove brand from the cleaned title if it appears at the beginning
+    if (shouldIgnoreBrand && brand && productTitle.toLowerCase().startsWith(brand.toLowerCase())) {
+      productTitle = productTitle.substring(brand.length).trim();
+    }
     
     if (store.productUrl && /^https?:/i.test(store.productUrl)) {
       linkHref = store.productUrl;
       linkTitle = 'View product at store';
     } else if (store.website && /^https?:/i.test(store.website)) {
-      const searchTerm = [brand, productTitle, styleCode].filter(Boolean).join(' ').trim();
+      // Build search term: exclude brand if Amazon is in title
+      const searchTermParts = shouldIgnoreBrand 
+        ? [productTitle, styleCode].filter(Boolean)
+        : [brand, productTitle, styleCode].filter(Boolean);
+      const searchTerm = searchTermParts.join(' ').trim();
+      
       if (searchTerm) {
         linkHref = this.createSearchUrl(store.website, searchTerm);
         linkTitle = `Search for "${searchTerm}" at ${storeName}`;
@@ -134,14 +175,105 @@ class StoreSelector {
         linkTitle = `Visit ${storeName} website`;
       }
     } else {
-      const searchTerm = [storeName, brand, productTitle, styleCode].filter(Boolean).join(' ').trim();
+      // Generate direct retailer URL based on store name instead of Google search
+      // Build search term: exclude brand if Amazon is in title
+      const searchTermParts = shouldIgnoreBrand 
+        ? [productTitle, styleCode].filter(Boolean)
+        : [brand, productTitle, styleCode].filter(Boolean);
+      const searchTerm = searchTermParts.join(' ').trim();
+      
       if (searchTerm) {
-        linkHref = `https://www.google.com/search?q=${encodeURIComponent(searchTerm)}`;
-        linkTitle = `Search for product at ${storeName}`;
+        linkHref = this.generateRetailerUrl(storeName, searchTerm);
+        linkTitle = `Search for "${searchTerm}" at ${storeName}`;
       }
     }
     
     return { href: linkHref, title: linkTitle };
+  }
+
+  /**
+   * Generate retailer URL based on store name
+   * @private
+   */
+  generateRetailerUrl(storeName, searchTerm) {
+    const encodedTerm = encodeURIComponent(searchTerm);
+    const storeNameLower = storeName.toLowerCase();
+    
+    // Best Buy variations (HIGHEST PRIORITY - always check first)
+    if (storeNameLower.includes('best buy') || 
+        storeNameLower.includes('bestbuy') || 
+        storeNameLower.includes('electronics') ||
+        storeNameLower.includes('computer')) {
+      return `https://www.bestbuy.com/site/searchpage.jsp?st=${encodedTerm}`;
+    }
+    
+    // Target variations
+    if (storeNameLower.includes('target')) {
+      return `https://www.target.com/s?searchTerm=${encodedTerm}`;
+    }
+    
+    // Walmart variations
+    if (storeNameLower.includes('walmart')) {
+      return `https://www.walmart.com/search?q=${encodedTerm}`;
+    }
+    
+    // Costco variations
+    if (storeNameLower.includes('costco')) {
+      return `https://www.costco.com/CatalogSearch?keyword=${encodedTerm}`;
+    }
+    
+    // Micro Center variations
+    if (storeNameLower.includes('micro center')) {
+      return `https://www.microcenter.com/search/search_results.aspx?Ntk=all&sortby=match&N=&myStore=false&Ntt=${encodedTerm}`;
+    }
+    
+    // Apple Store variations
+    if (storeNameLower.includes('apple')) {
+      return `https://www.apple.com/search/?src=serp&f=product&q=${encodedTerm}`;
+    }
+    
+    // Amazon variations
+    if (storeNameLower.includes('amazon')) {
+      return `https://www.amazon.com/s?k=${encodedTerm}`;
+    }
+    
+    // Home Depot variations
+    if (storeNameLower.includes('home depot')) {
+      return `https://www.homedepot.com/s/${encodedTerm}`;
+    }
+    
+    // Lowes variations
+    if (storeNameLower.includes('lowes') || storeNameLower.includes('lowe\'s')) {
+      return `https://www.lowes.com/search?searchTerm=${encodedTerm}`;
+    }
+    
+    // Macy's variations
+    if (storeNameLower.includes('macy')) {
+      return `https://www.macys.com/shop/search?keyword=${encodedTerm}`;
+    }
+    
+    // Nordstrom variations
+    if (storeNameLower.includes('nordstrom')) {
+      return `https://www.nordstrom.com/sr?origin=keywordsearch&keyword=${encodedTerm}`;
+    }
+    
+    // Kohl's variations
+    if (storeNameLower.includes('kohl')) {
+      return `https://www.kohls.com/catalog.jsp?search=${encodedTerm}`;
+    }
+    
+    // CVS variations
+    if (storeNameLower.includes('cvs')) {
+      return `https://www.cvs.com/shop/search?searchTerm=${encodedTerm}`;
+    }
+    
+    // Walgreens variations
+    if (storeNameLower.includes('walgreens')) {
+      return `https://www.walgreens.com/search/results.jsp?Ntt=${encodedTerm}`;
+    }
+    
+    // Fallback to Best Buy for ALL unknown stores (Best Buy is our #1 priority)
+    return `https://www.bestbuy.com/site/searchpage.jsp?st=${encodedTerm}`;
   }
 
   /**
@@ -181,6 +313,16 @@ class StoreSelector {
     } else {
       return `${baseUrl}/search?q=${encodedTerm}`;
     }
+  }
+
+  /**
+   * Update product information for link generation
+   * @param {Object} productData - Product data object
+   */
+  updateProductData(productData) {
+    this.options.productTitle = productData.title || '';
+    this.options.brand = productData.brand || '';
+    this.options.styleCode = productData.styleCode || '';
   }
 
   /**

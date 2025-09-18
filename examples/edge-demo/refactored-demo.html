@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JENNi Edge - Refactored Demo</title>
+    
+    <!-- Mock Product Page Styles -->
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            background: #f9fafb;
+        }
+        
+        .product-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        
+        .product-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .product-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            padding: 40px;
+        }
+        
+        .product-image {
+            text-align: center;
+            font-size: 120px;
+            padding: 40px;
+            background: #f8fafc;
+            border-radius: 8px;
+        }
+        
+        .product-details h1 {
+            margin: 0 0 10px 0;
+            font-size: 28px;
+            color: #1f2937;
+        }
+        
+        .product-brand {
+            color: #6b7280;
+            font-size: 16px;
+            margin-bottom: 20px;
+        }
+        
+        .product-price {
+            font-size: 32px;
+            font-weight: bold;
+            color: #059669;
+            margin-bottom: 20px;
+        }
+        
+        .product-meta {
+            display: grid;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+        
+        .meta-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .meta-label {
+            font-weight: 600;
+            color: #374151;
+        }
+        
+        .meta-value {
+            color: #6b7280;
+        }
+        
+        .add-to-cart {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            margin-bottom: 20px;
+        }
+        
+        .add-to-cart:hover {
+            background: #2563eb;
+        }
+        
+        .demo-info {
+            background: #fef3c7;
+            border: 1px solid #f59e0b;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        
+        .demo-info h3 {
+            margin: 0 0 10px 0;
+            color: #92400e;
+        }
+        
+        .component-status {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            margin: 20px 0;
+        }
+        
+        .status-card {
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            border-radius: 6px;
+            padding: 10px;
+            font-size: 12px;
+        }
+        
+        .status-card.error {
+            background: #fef2f2;
+            border-color: #fecaca;
+        }
+        
+        .status-title {
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        
+        .status-description {
+            color: #6b7280;
+            font-size: 11px;
+        }
+    </style>
+</head>
+<body>
+    <div class="product-container">
+        <div class="product-header">
+            <h1>🔥 Refactored JENNi Edge Demo</h1>
+            <p>Modular Architecture - Reduced from 2,535 lines to ~200 lines</p>
+        </div>
+        
+        <div class="demo-info">
+            <h3>📦 Refactoring Results</h3>
+            <div class="component-status" id="componentStatus">
+                <div class="status-card">
+                    <div class="status-title">Original Size</div>
+                    <div class="status-description">2,535 lines / 96KB</div>
+                </div>
+                <div class="status-card">
+                    <div class="status-title">Refactored Size</div>
+                    <div class="status-description">~200 lines / ~8KB</div>
+                </div>
+                <div class="status-card">
+                    <div class="status-title">Reduction</div>
+                    <div class="status-description">92% smaller</div>
+                </div>
+                <div class="status-card">
+                    <div class="status-title">Components Extracted</div>
+                    <div class="status-description">9 reusable modules</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="demo-info">
+            <h3>🔗 New Feature: Retailer Navigation</h3>
+            <p style="font-size: 12px; margin: 10px 0;">
+                The panel now includes <strong>clickable retailer links</strong> that automatically search for the current product:
+            </p>
+            <ul style="margin: 10px 0; padding-left: 20px; font-size: 12px;">
+                <li>🎯 <strong>Smart Prioritization</strong> - Apple products prioritize Apple Store & Best Buy</li>
+                <li>🔍 <strong>Auto Product Search</strong> - Links include cleaned product title in search URL</li>
+                <li>📱 <strong>Responsive Design</strong> - Stacks vertically on mobile devices</li>
+                <li>📊 <strong>Analytics Tracking</strong> - Tracks retailer clicks for insights</li>
+                <li>⚡ <strong>Performance</strong> - Opens in new tab, doesn't interrupt JENNi flow</li>
+            </ul>
+        </div>
+
+        <div class="product-content">
+            <div class="product-image">
+                📱
+            </div>
+            
+            <div class="product-details">
+                <div class="product-brand">Apple</div>
+                <h1 class="product-title">iPhone 15 Pro Max</h1>
+                <div class="product-price">$1,199.00</div>
+                
+                <div class="product-meta">
+                    <div class="meta-item">
+                        <span class="meta-label">SKU:</span>
+                        <span class="meta-value" data-sku="IPHONE15PROMAX-256">IPHONE15PROMAX-256</span>
+                    </div>
+                    <div class="meta-item">
+                        <span class="meta-label">GTIN:</span>
+                        <span class="meta-value" data-gtin="0194253408123">0194253408123</span>
+                    </div>
+                    <div class="meta-item">
+                        <span class="meta-label">Model:</span>
+                        <span class="meta-value">A2849</span>
+                    </div>
+                    <div class="meta-item">
+                        <span class="meta-label">Storage:</span>
+                        <span class="meta-value">256GB</span>
+                    </div>
+                    <div class="meta-item">
+                        <span class="meta-label">Color:</span>
+                        <span class="meta-value">Natural Titanium</span>
+                    </div>
+                </div>
+                
+                <button class="add-to-cart">Add to Cart</button>
+                
+                <div class="demo-info">
+                    <h3>🧩 Extracted Components</h3>
+                    <ul style="margin: 10px 0; padding-left: 20px; font-size: 12px;">
+                        <li><strong>ProductFingerprinting</strong> - Product data extraction</li>
+                        <li><strong>RetailerNavigation</strong> - Clickable retailer links</li>
+                        <li><strong>PanelManager</strong> - UI panel management</li>
+                        <li><strong>APIClient</strong> - HTTP requests & caching</li>
+                        <li><strong>PageWatcher</strong> - DOM change detection</li>
+                        <li><strong>StoreSelector</strong> - Store selection UI</li>
+                        <li><strong>CheckoutModal</strong> - Checkout flow</li>
+                        <li><strong>AddressGenerator</strong> - Address utilities</li>
+                        <li><strong>FormValidators</strong> - Form validation</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Load New Modular Components -->
+    <script src="../../src/components/ProductFingerprinting.js"></script>
+    <script src="../../src/components/RetailerNavigation.js"></script>
+    <script src="../../src/components/PanelManager.js"></script>
+    <script src="../../src/components/APIClient.js"></script>
+    <script src="../../src/components/PageWatcher.js"></script>
+    <script src="../../src/components/AddressGenerator.js"></script>
+    <script src="../../src/components/FormValidators.js"></script>
+    <script src="../../src/components/StoreSelector.js"></script>
+    <script src="../../src/components/CheckoutModal.js"></script>
+    
+    <!-- Load Refactored Main Script -->
+    <script src="edge-refactored.js"></script>
+    
+    <script>
+        // Initialize with debug mode
+        document.addEventListener('DOMContentLoaded', async () => {
+            console.log('🚀 Initializing Refactored JENNi Edge...');
+            
+            // Override init to use debug mode and mock data
+            if (window.JenniEdge) {
+                await window.JenniEdge.init({
+                    debug: true,
+                    forceMock: true,
+                    zip: '10001',
+                    autoOpenPanel: false
+                });
+                
+                console.log('✅ JENNi Edge initialized successfully');
+                console.log('📊 Component status:', {
+                    productFingerprinting: !!window.ProductFingerprinting,
+                    panelManager: !!window.PanelManager,
+                    apiClient: !!window.APIClient,
+                    pageWatcher: !!window.PageWatcher,
+                    storeSelector: !!window.StoreSelector,
+                    checkoutModal: !!window.CheckoutModal,
+                    addressGenerator: !!window.AddressGenerator,
+                    formValidators: !!window.FormValidators
+                });
+            }
+        });
+    </script>
+</body>
+</html>

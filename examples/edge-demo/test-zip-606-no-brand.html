@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JENNi Edge - ZIP 606 No Brand Test</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+    }
+    
+    .demo-container {
+      max-width: 800px;
+      margin: 0 auto;
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      padding: 30px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    
+    .demo-title {
+      color: white;
+      font-size: 28px;
+      font-weight: 700;
+      text-align: center;
+      margin-bottom: 10px;
+      letter-spacing: -0.02em;
+    }
+    
+    .demo-subtitle {
+      color: rgba(255, 255, 255, 0.8);
+      font-size: 16px;
+      text-align: center;
+      margin-bottom: 30px;
+      line-height: 1.4;
+    }
+    
+    .demo-instructions {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 20px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    
+    .demo-instructions h3 {
+      color: white;
+      margin-top: 0;
+      margin-bottom: 15px;
+      font-size: 18px;
+    }
+    
+    .demo-instructions ul {
+      color: rgba(255, 255, 255, 0.9);
+      margin: 0;
+      padding-left: 20px;
+    }
+    
+    .demo-instructions li {
+      margin-bottom: 8px;
+      line-height: 1.4;
+    }
+    
+    .highlight {
+      background: rgba(255, 255, 255, 0.2);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-weight: 600;
+    }
+    
+    .warning {
+      background: rgba(255, 193, 7, 0.2);
+      border: 1px solid rgba(255, 193, 7, 0.4);
+      border-radius: 8px;
+      padding: 15px;
+      margin: 20px 0;
+      color: rgba(255, 255, 255, 0.95);
+    }
+    
+    .warning strong {
+      color: #ffc107;
+    }
+  </style>
+</head>
+<body>
+  <div class="demo-container">
+    <h1 class="demo-title">JENNi Edge - ZIP 606 Brand Filter</h1>
+    <p class="demo-subtitle">
+      Test the ZIP code 606 functionality where brand information is excluded from nearby store searches.
+    </p>
+    
+    <div class="warning">
+      <strong>⚠️ Special Behavior:</strong> This demo uses ZIP code <strong>60612</strong> which starts with "606". 
+      The brand "Sony" will be automatically removed from search requests to simulate broader product matching.
+    </div>
+    
+    <div class="demo-instructions">
+      <h3>How to Test:</h3>
+      <ul>
+        <li>Open browser <span class="highlight">Developer Tools</span> (F12) and check the Console tab</li>
+        <li>Click the <span class="highlight">JENNi pill</span> that appears in the bottom-right corner</li>
+        <li>Look for console logs showing <span class="highlight">"ZIP starts with 606 - removing brand"</span></li>
+        <li>Notice that the <span class="highlight">brand field will be empty</span> in API calls</li>
+        <li>Try changing the ZIP to something else (like <span class="highlight">90210</span>) to see the brand being included</li>
+        <li>Compare the <span class="highlight">fetchNodes</span> and <span class="highlight">resolve payload</span> logs</li>
+      </ul>
+    </div>
+    
+    <div class="demo-instructions">
+      <h3>Expected Console Output:</h3>
+      <ul>
+        <li><code>[JenniEdge] ZIP starts with 606 - removing brand from fingerprint</code></li>
+        <li><code>[JenniEdge] fetchNodes - ZIP check: { zip: "60612", startsWithWith606: true, originalBrand: "Sony", searchBrand: "" }</code></li>
+        <li><code>[JenniEdge] resolve payload</code> with empty brand field</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Load the updated JENNi Edge script -->
+  <script src="edge.js"></script>
+  
+  <script>
+    // Initialize JENNi Edge with ZIP starting with 606
+    document.addEventListener('DOMContentLoaded', async function() {
+      try {
+        await window.JenniEdge.init({
+          tenant: 'demo',
+          zip: '60612', // Starts with 606 - brand will be excluded
+          debug: true, // Enable debug to see console logs
+          forceMock: true,
+          autoOpenPanel: false,
+          mockData: {
+            eligible: true,
+            etaMinutes: 90,
+            node_count: 3,
+            matching_score: 0.9,
+            nodes: [
+              {
+                id: 'target_001',
+                name: 'Target',
+                address: '123 Michigan Ave, Chicago, IL 60612',
+                etaMinutes: 85,
+                distanceMiles: 2.3,
+                stock: 5,
+                website: 'https://target.com',
+                productUrl: null,
+                margin: 15.50,
+                floor: 12.00,
+                pgPass: true,
+                productMatch: false,
+                score: 0.82
+              },
+              {
+                id: 'bestbuy_001',
+                name: 'Best Buy',
+                address: '456 State St, Chicago, IL 60612',
+                etaMinutes: 110,
+                distanceMiles: 3.7,
+                stock: 3,
+                website: 'https://bestbuy.com',
+                productUrl: null,
+                margin: 18.25,
+                floor: 12.00,
+                pgPass: true,
+                productMatch: true,
+                score: 0.95
+              },
+              {
+                id: 'walmart_001',
+                name: 'Walmart',
+                address: '789 Roosevelt Rd, Chicago, IL 60612',
+                etaMinutes: 95,
+                distanceMiles: 2.8,
+                stock: 6,
+                website: 'https://walmart.com',
+                productUrl: null,
+                margin: 16.75,
+                floor: 12.00,
+                pgPass: true,
+                productMatch: false,
+                score: 0.78
+              }
+            ],
+            product: {
+              title: 'Sony ULT Field 3 Wireless Portable Bluetooth Speaker',
+              brand: 'Sony', // This will be excluded from searches due to ZIP 606
+              sku: 'ULT-FIELD-3-001',
+              gtin: '027242925854',
+              styleCode: 'ULTF3-WHT-001',
+              price: 199.99
+            }
+          }
+        });
+        
+        console.log('✅ JENNi Edge initialized successfully with ZIP 606 brand filtering');
+        console.log('🔍 Check console logs when opening the panel to see brand filtering in action');
+        
+        // Add a helper function to test different ZIP codes
+        window.testZipCode = function(newZip) {
+          console.log(`\n🧪 Testing ZIP code: ${newZip}`);
+          window.JenniEdge.setZip(newZip, { force: true });
+        };
+        
+        console.log('💡 Try: testZipCode("90210") to test with non-606 ZIP');
+        console.log('💡 Try: testZipCode("60601") to test with 606 ZIP');
+        
+      } catch (error) {
+        console.error('❌ Failed to initialize JENNi Edge:', error);
+      }
+    });
+  </script>
+</body>
+</html>
