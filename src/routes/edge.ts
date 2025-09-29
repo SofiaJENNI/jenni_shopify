@@ -46,7 +46,53 @@ edge.get('/inventory', (req: Request, res: Response) => {
 
 edge.post('/resolve', async (req: Request, res: Response) => {
   try {
-    const { zip = '10001', fingerprint } = (req.body as any) || {};
+    const { zip = '10001', url, tenant, fingerprint: clientFingerprint } = (req.body as any) || {};
+    
+    // Use client-side fingerprint if available, otherwise generate server-side from URL
+    let fingerprint: any = { url: url || 'unknown' };
+    
+    if (clientFingerprint && typeof clientFingerprint === 'object') {
+      // Prefer client-side fingerprint data as it's more comprehensive
+      fingerprint = { ...fingerprint, ...clientFingerprint };
+      console.log(`[JenniEdge Server] Using client-side fingerprint:`, {
+        title: fingerprint.title,
+        brand: fingerprint.brand,
+        sku: fingerprint.sku,
+        gtin: fingerprint.gtin,
+        styleCode: fingerprint.styleCode,
+        variant: fingerprint.variant,
+        price: fingerprint.price,
+        quality: scoreFingerprint(fingerprint)
+      });
+    } else if (url && typeof url === 'string' && /^https?:\/\//i.test(url)) {
+      // Fallback to server-side parsing
+      try {
+        const safeUrl = new URL(url);
+        const timeout = 6000;
+        const response = await axios.get(safeUrl.toString(), { 
+          timeout, 
+          maxContentLength: 512000, 
+          headers: { 'User-Agent': 'JenniEdge/1.0', 'Accept': 'text/html,*/*' } 
+        });
+        const html = typeof response.data === 'string' ? response.data : '';
+        if (html) {
+          fingerprint = parseProductHtml(html, safeUrl.toString());
+          console.log(`[JenniEdge Server] Server-side fingerprint extracted:`, {
+            title: fingerprint.title,
+            brand: fingerprint.brand,
+            sku: fingerprint.sku,
+            gtin: fingerprint.gtin,
+            styleCode: fingerprint.styleCode,
+            variant: fingerprint.variant,
+            quality: scoreFingerprint(fingerprint)
+          });
+        }
+      } catch (e) {
+        // Fallback to basic fingerprint with URL parsing
+        const urlMatch = url.match(/([A-Z0-9]{4,}-[0-9]{3})/i);
+        if (urlMatch) fingerprint.styleCode = urlMatch[1];
+      }
+    }
     const hasGtin = !!fingerprint?.gtin;
   const fingerprintQuality = scoreFingerprint(fingerprint);
   const matchMeta = deriveMatchMeta(fingerprint);
@@ -54,7 +100,19 @@ edge.post('/resolve', async (req: Request, res: Response) => {
     // Nearby candidates to estimate courier + trust
     const query = String(fingerprint?.styleCode || fingerprint?.sku || fingerprint?.title || 'sneakers');
     const brand = String(fingerprint?.brand || '');
+    console.log(`[JenniEdge Server] Searching nearby stores with query: "${query}", brand: "${brand}", zip: ${zip}`);
+    
     const nodes = await placesNearby(zip, query, brand, fingerprint?.styleCode, false);
+    console.log(`[JenniEdge Server] Found ${nodes.length} nearby stores:`, nodes.map(n => ({
+      name: n.name,
+      address: n.address,
+      distanceMiles: n.distanceMiles,
+      etaMinutes: n.etaMinutes,
+      website: n.website,
+      productUrl: n.productUrl,
+      score: n.score,
+      productMatch: n.productMatch
+    })));
     const topNodes = nodes.slice(0, 5);
     const nodeCount = topNodes.length;
     const best = (topNodes[0] || nodes[0]) || {};
@@ -141,6 +199,14 @@ edge.post('/resolve', async (req: Request, res: Response) => {
     const marginHeadroom = Number((pg.margin - pg.floor).toFixed(2));
     const suggestedIncentive = (pg.pass && marginHeadroom > Math.max(4, pg.floor * 0.4)) ? 'free_2day_shipping' : null;
     const waitlistOffered = !eligible && ['no_nearby_stores','not_in_network'].includes(reason);
+    
+    console.log(`[JenniEdge Server] Final resolve result:`, {
+      eligible: eligible && (anyPass || pgPass),
+      nodeCount: nodesWithEconomics.length,
+      reason,
+      profitGuard: { margin: pg.margin, floor: pg.floor, pass: pg.pass }
+    });
+    
     res.json({
       eligible: eligible && (anyPass || pgPass),
       sameDay,
@@ -194,7 +260,7 @@ edge.post('/resolve', async (req: Request, res: Response) => {
 });
 
 edge.post('/export', (_req: Request, res: Response) => {
-  const snippet = `<script src="https://cdn.example.com/jenni/edge.js" defer></script>\n<script>JenniEdge.init({ tenant:'demo', zip:'10001', apiBase:'https://api.example.com/edge' })</script>`;
+  const snippet = `<script src="https://cdn.example.com/jenni/edge.js" defer></script>\n<script>JenniEdge.init({ tenant:'demo', zip:'10001', apiBase:'https://api.example.com/edge', debug: true })</script>`;
   res.json({ ok: true, snippet, templateUrl: 'https://cdn.example.com/jenni/gtm-template.json' });
 });
 
@@ -425,9 +491,10 @@ edge.get('/preview-overlay', async (req: Request, res: Response) => {
         <div class="title">${resolved?.eligible ? 'Get it Today' : 'Preview'}</div>
     <div class="muted" style="margin-top:6px">${esc(fp?.title)||'Product'} • ZIP ${esc(zip)} • ${resolved?.eligible?`Arrives by ${esc(etaTxt)}`:'Not eligible today'}</div>
     <div style="margin-top:6px">Fingerprint: <span class="badge">${matchMeta.matchType}</span><span class="badge">Q ${(scoreFingerprint(fp)).toFixed(2)}</span>${pg?.suggestedIncentive?`<span class="incent">${pg.suggestedIncentive.replace(/_/g,' ')}</span>`:''}</div>
-    <div style="margin-top:10px">PDP $${Math.round(pg?.price||0)} → Buy $${Math.round(pg?.buy_cost||pg?.landed_cost||0)} + Courier $${Math.round(pg?.courier_est||0)} + Fee $${Math.round(pg?.fee||0)} = Profit $${Math.round(pg?.margin||0)}</div>
+    <div style="margin-top:10px">PDP $${Math.round(pg?.price||0)} → Buy $${Math.round(pg?.buy_cost||pg?.landed_cost||0)} + Courier $${Math.round(pg?.courier_est||0)} + Fee $${Math.round(pg?.fee||0)} =
+     $${Math.round(pg?.margin||0)}</div>
         <div class="nodes" style="margin-top:12px">
-          ${(nodes.slice(0,3)).map(n=>`<div class="n"><div><strong>${esc(n.name||'Store')}</strong> • ${Math.round(n.distanceMiles||0)} mi • ~${Math.round(n.etaMinutes||0)}m ${n.pgPass?'<span class="pill">Pass</span>':'<span class="pill" style="background:#92400e">Hold</span>'}</div><div class="muted">Profit $${Math.round(n.margin||0)}</div></div>`).join('')}
+          ${(nodes.slice(0,3)).map(n=>`<div class="n"><div><strong>${esc(n.name||'Store')}</strong> • ${Math.round(n.distanceMiles||0)} mi • ~${Math.round(n.etaMinutes||0)}m ${n.pgPass?'<span class="pill">Pass</span>':'<span class="pill" style="background:#92400e">Hold</span>'}</div>${n.address ? `<div class="muted" style="font-size:11px;">${esc(n.address)}</div>` : ''}<div class="muted">Profit $${Math.round(n.margin||0)}</div></div>`).join('')}
         </div>
         <div style="margin-top:12px"><a href="/edge/test-order" target="_blank"><button>Checkout with Jenni</button></a></div>
       </div>
@@ -507,6 +574,7 @@ function priceFromFingerprint(fp: any): number | undefined {
 async function placesNearby(zip: string, q: string, brand?: string, styleCode?: string, probe: boolean = false) {
   const key = process.env.GOOGLE_MAPS_API_KEY || '';
   const center = await geocodeZip(zip);
+  console.log(`[JenniEdge Server] Places search - ZIP: ${zip}, Center: ${center.lat},${center.lng}, Query: "${q}", Brand: "${brand}", StyleCode: "${styleCode}", GoogleMaps: ${!!key}`);
   if (key) {
     try {
       const mapsTimeout = Number(process.env.MAPS_HTTP_TIMEOUT_MS || 2500);
@@ -524,7 +592,36 @@ async function placesNearby(zip: string, q: string, brand?: string, styleCode?: 
       if (brandWord && qWord) {
         queries.push({ url: 'https://maps.googleapis.com/maps/api/place/textsearch/json', params: { query: `${brandWord} store`, key, region: 'us', ...bias } });
       }
-      // 3) Nearby shoe stores with brand bias
+      // 3) Major electronics and retail stores
+      const majorRetailers = ['Best Buy', 'Target', 'Walmart', 'Costco', 'Micro Center'];
+      const electronicsStores = ['Best Buy', 'Micro Center', 'B&H Photo', 'Fry\'s Electronics'];
+      
+      // Add electronics stores for tech products
+      if (brandWord.toLowerCase().includes('apple') || brandWord.toLowerCase().includes('sony') || 
+          brandWord.toLowerCase().includes('samsung') || brandWord.toLowerCase().includes('microsoft')) {
+        electronicsStores.forEach(store => {
+          queries.push({ url: 'https://maps.googleapis.com/maps/api/place/textsearch/json', params: { query: store, key, region: 'us', ...bias } });
+        });
+      }
+      
+      // Brand-specific stores
+      if (brandWord.toLowerCase().includes('apple')) {
+        queries.push({ url: 'https://maps.googleapis.com/maps/api/place/textsearch/json', params: { query: 'Apple Store', key, region: 'us', ...bias } });
+      }
+      if (brandWord.toLowerCase().includes('sony')) {
+        queries.push({ url: 'https://maps.googleapis.com/maps/api/place/textsearch/json', params: { query: 'Sony Store', key, region: 'us', ...bias } });
+      }
+      if (brandWord.toLowerCase().includes('microsoft')) {
+        queries.push({ url: 'https://maps.googleapis.com/maps/api/place/textsearch/json', params: { query: 'Microsoft Store', key, region: 'us', ...bias } });
+      }
+      
+      // General major retailers (always include some)
+      const selectedRetailers = majorRetailers.slice(0, 3); // Take first 3 to avoid too many queries
+      selectedRetailers.forEach(store => {
+        queries.push({ url: 'https://maps.googleapis.com/maps/api/place/textsearch/json', params: { query: store, key, region: 'us', ...bias } });
+      });
+      
+      // 4) Nearby shoe stores with brand bias (fallback)
       queries.push({ url: 'https://maps.googleapis.com/maps/api/place/nearbysearch/json', params: { location: `${center.lat},${center.lng}`, radius, type: 'shoe_store', keyword: brandWord || 'sneakers', key } });
 
       // Fetch and merge results
@@ -591,8 +688,26 @@ async function placesNearby(zip: string, q: string, brand?: string, styleCode?: 
       const scoreName = (name: string, brandWord: string) => {
         const n = (name || '').toLowerCase();
         const b = (brandWord || '').toLowerCase();
+        
+        // Major electronics retailers (subtle prioritization)
+        if (n.includes('best buy')) return 0.7;
+        if (n.includes('micro center')) return 0.6;
+        if (n.includes('b&h photo') || n.includes('b&h')) return 0.6;
+        
+        // Major general retailers
+        if (n.includes('target')) return 0.5;
+        if (n.includes('walmart')) return 0.5;
+        if (n.includes('costco')) return 0.5;
+        
+        // Brand-specific stores (highest priority for matching brands)
+        if (b.includes('apple') && n.includes('apple')) return 0.9;
+        if (b.includes('sony') && n.includes('sony')) return 0.9;
+        if (b.includes('microsoft') && n.includes('microsoft')) return 0.9;
+        if (b.includes('samsung') && n.includes('samsung')) return 0.8;
+        
+        // General brand matching
         if (!b) return 0;
-        if (n.includes(b)) return 0.5;
+        if (n.includes(b)) return 0.4;
         return 0;
       };
 
@@ -604,9 +719,30 @@ async function placesNearby(zip: string, q: string, brand?: string, styleCode?: 
         const types: string[] = (det.types || r.types || []) as any;
         const hasShoeType = Array.isArray(types) && types.includes('shoe_store');
         const hasClothing = Array.isArray(types) && types.includes('clothing_store');
+        const hasElectronics = Array.isArray(types) && types.includes('electronics_store');
         const website: string = det.website || '';
         const brandBoost = scoreName(r.name, brandWord) + (website && brandWord && website.toLowerCase().includes(brandWord.toLowerCase()) ? 0.1 : 0);
-        const typeBoost = (hasShoeType ? 0.2 : 0) + (hasClothing ? 0.1 : 0);
+        
+        // Enhanced type boost for different store categories
+        let typeBoost = (hasShoeType ? 0.2 : 0) + (hasClothing ? 0.1 : 0) + (hasElectronics ? 0.3 : 0);
+        
+        // Additional boost for tech brands at electronics retailers
+        const storeName = (r.name || '').toLowerCase();
+        const techBrands = ['apple', 'sony', 'samsung', 'microsoft', 'lg', 'hp', 'dell'];
+        const isTechBrand = techBrands.some(brand => brandWord.toLowerCase().includes(brand));
+        
+        if (isTechBrand) {
+          // Electronics retailers get extra boost for tech brands
+          if (storeName.includes('best buy') || storeName.includes('micro center') || 
+              storeName.includes('b&h') || storeName.includes('fry')) {
+            typeBoost += 0.15;
+          }
+          // General retailers get moderate boost
+          if (storeName.includes('target') || storeName.includes('walmart') || storeName.includes('costco')) {
+            typeBoost += 0.1;
+          }
+        }
+        
         const distanceBoost = Math.max(0, 0.2 - Math.min(distanceMiles, 20) * (0.2/20));
         const probeHit = websiteProbeResults[r.place_id]?.productMatch ? 0.25 : 0;
         const score = Math.min(0.99, 0.3 + brandBoost + typeBoost + distanceBoost + probeHit);
@@ -626,21 +762,25 @@ async function placesNearby(zip: string, q: string, brand?: string, styleCode?: 
       .sort((a:any,b:any)=> b.score - a.score || a.distanceMiles - b.distanceMiles)
       .slice(0, 20);
 
+      console.log(`[JenniEdge Server] Google Places API results: ${items.length} stores found`);
       return items;
     } catch {}
   }
   // Fallback demo list near the geocoded center
   const demo = [
-    { id: 'demo_a', name: 'Downtown Sneaker Co', lat: center.lat+0.02, lng: center.lng-0.01, website: 'https://example.com/downtown' },
-    { id: 'demo_b', name: 'City Sports Outfitters', lat: center.lat-0.03, lng: center.lng+0.015, website: 'https://example.com/citysports' },
-    { id: 'demo_c', name: 'Uptown Active', lat: center.lat+0.05, lng: center.lng+0.02, website: 'https://example.com/uptown' },
+    { id: 'demo_a', name: 'Downtown Sneaker Co', lat: center.lat+0.02, lng: center.lng-0.01, website: 'https://example.com/downtown', address: '123 Main St, Downtown' },
+    { id: 'demo_b', name: 'City Sports Outfitters', lat: center.lat-0.03, lng: center.lng+0.015, website: 'https://example.com/citysports', address: '456 Oak Ave, City Center' },
+    { id: 'demo_c', name: 'Uptown Active', lat: center.lat+0.05, lng: center.lng+0.02, website: 'https://example.com/uptown', address: '789 Pine Rd, Uptown' },
   ];
-  return demo.map(d => {
+  const demoResults = demo.map(d => {
     const loc = { lat: d.lat, lng: d.lng };
     const distanceMiles = haversine(center, loc);
     const etaMinutes = Math.max(30, Math.round((distanceMiles/20)*60 + 30));
-  return { id: d.id, name: d.name, distanceMiles, etaMinutes, stock: Math.max(1, Math.round(8 - distanceMiles)), website: d.website, productUrl: '' };
+    return { id: d.id, name: d.name, address: d.address, distanceMiles, etaMinutes, stock: Math.max(1, Math.round(8 - distanceMiles)), website: d.website, productUrl: '', score: 0.7, productMatch: false };
   });
+  
+  console.log(`[JenniEdge Server] Places fallback demo results: ${demoResults.length} stores`);
+  return demoResults;
 }
 
 // Return nearby store candidates for a given product query and ZIP
@@ -851,17 +991,85 @@ async function internalResolveLike(zip: string, fingerprint: any){
 
 // Basic HTML product parsing (best-effort, non-executing):
 function parseProductHtml(html: string, url: string){
-  const out: any = { url, title: null, brand: null, sku: null, gtin: null, styleCode: null };
+  const out: any = { url, title: null, brand: null, sku: null, gtin: null, styleCode: null, variant: null };
   try {
     const og = html.match(/<meta[^>]+property=["']og:title["'][^>]*>/i);
     if (og) { const m = og[0].match(/content=["']([^"']+)["']/i); if (m) out.title = m[1]; }
     if (!out.title){ const t = html.match(/<title>([^<]{3,120})<\/title>/i); if (t) out.title = t[1]; }
+    
+    // Clean up Amazon titles
+    if (out.title && (out.title.toLowerCase().includes('amazon.com') || url.toLowerCase().includes('amazon.com'))) {
+      out.title = out.title.replace(/amazon\.com/gi, '').trim();
+      const lastColonIndex = out.title.lastIndexOf(':');
+      if (lastColonIndex !== -1) {
+        out.title = out.title.substring(0, lastColonIndex).trim();
+      }
+    }
     const sku = html.match(/"sku"\s*:\s*"([^"]{3,60})"/i); if (sku) out.sku = sku[1];
     const gtin = html.match(/"(gtin13|gtin|gtin14)"\s*:\s*"([0-9]{8,14})"/i); if (gtin) out.gtin = gtin[2];
     const brand = html.match(/"brand"\s*:\s*("([^"]{2,60})"|\{[^}]*"name"\s*:\s*"([^"]{2,60})"[^}]*\})/i);
     if (brand){ out.brand = brand[2] || brand[3] || null; }
     const style = html.match(/([A-Z0-9]{4,}-[0-9]{3})/); if (style) out.styleCode = style[1];
-    // Attempt minimal JSON-LD scan for price
+    
+    // Extract size and color information
+    const variant: any = {};
+    
+    // Size extraction
+    const sizePatterns = [
+      /"size"\s*:\s*"([^"]{1,20})"/i,
+      /<meta[^>]+name=["']product:size["'][^>]*content=["']([^"']{1,20})["']/i,
+      /<[^>]*class=["'][^"']*size[^"']*selected[^"']*["'][^>]*>([^<]{1,20})</i,
+      /<option[^>]*selected[^>]*>\s*([A-Z]{1,4}|\d{1,2}|\d{1,2}\.\d)\s*</i
+    ];
+    
+    for (const pattern of sizePatterns) {
+      const match = html.match(pattern);
+      if (match && match[1]) {
+        const size = match[1].trim().toUpperCase();
+        if (/^(XXS|XS|S|M|L|XL|XXL|XXXL|\d{1,2}|\d{1,2}\.\d|\d{1,2}\/\d{1,2})$/.test(size)) {
+          variant.size = size;
+          break;
+        }
+      }
+    }
+    
+    // Color extraction
+    const colorPatterns = [
+      /"color"\s*:\s*"([^"]{2,30})"/i,
+      /<meta[^>]+name=["']product:color["'][^>]*content=["']([^"']{2,30})["']/i,
+      /<[^>]*class=["'][^"']*color[^"']*selected[^"']*["'][^>]*>([^<]{2,30})</i,
+      /<[^>]*data-color=["']([^"']{2,30})["'][^>]*class=["'][^"']*selected/i
+    ];
+    
+    const commonColors = ['black', 'white', 'red', 'blue', 'green', 'yellow', 'orange', 'purple', 'pink', 'brown', 'gray', 'grey', 'navy', 'beige', 'tan', 'maroon', 'silver', 'gold', 'cream', 'ivory'];
+    
+    for (const pattern of colorPatterns) {
+      const match = html.match(pattern);
+      if (match && match[1]) {
+        const color = match[1].trim().toLowerCase();
+        if (commonColors.includes(color) || color.length <= 20) {
+          variant.color = color;
+          break;
+        }
+      }
+    }
+    
+    // Fallback: extract color from title
+    if (!variant.color && out.title) {
+      const titleLower = out.title.toLowerCase();
+      for (const color of commonColors) {
+        if (titleLower.includes(color)) {
+          variant.color = color;
+          break;
+        }
+      }
+    }
+    
+    if (Object.keys(variant).length > 0) {
+      out.variant = variant;
+    }
+    
+    // Attempt minimal JSON-LD scan for price and additional variant data
     const ldBlocks = html.match(/<script[^>]+application\/ld\+json[^>]*>[\s\S]*?<\/script>/gi) || [];
     for (const blk of ldBlocks){
       try { const jsonTxt = blk.replace(/^[^>]*>/,'').replace(/<\/script>$/,''); const obj = JSON.parse(jsonTxt); const arr = Array.isArray(obj)?obj:[obj];
@@ -870,6 +1078,16 @@ function parseProductHtml(html: string, url: string){
             if (type.includes('product')){
               out.ld = node; out.title = out.title || node.name || null; out.gtin = out.gtin || node.gtin13 || node.gtin || null; out.sku = out.sku || node.sku || null;
               if (node.brand){ out.brand = out.brand || (typeof node.brand==='string'?node.brand: (node.brand.name||null)); }
+              
+              // Extract variant data from JSON-LD
+              if (node.color && !out.variant?.color) {
+                if (!out.variant) out.variant = {};
+                out.variant.color = typeof node.color === 'string' ? node.color.toLowerCase() : null;
+              }
+              if (node.size && !out.variant?.size) {
+                if (!out.variant) out.variant = {};
+                out.variant.size = typeof node.size === 'string' ? node.size.toUpperCase() : null;
+              }
             }
         }
       } catch {}
@@ -886,6 +1104,13 @@ function scoreFingerprint(fp: any): number {
   if (fp.styleCode) score += 0.15;
   if (fp.brand) score += 0.1;
   if (fp.title) score += 0.05;
+  
+  // Add scoring for variant attributes
+  if (fp.variant) {
+    if (fp.variant.size) score += 0.03;
+    if (fp.variant.color) score += 0.02;
+  }
+  
   return Math.min(1, score);
 }
 

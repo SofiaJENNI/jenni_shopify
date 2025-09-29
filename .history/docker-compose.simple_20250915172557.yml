@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  jenni-app:
+    build: .
+    ports:
+      - "4000:4000"
+    environment:
+      - NODE_ENV=development
+      - PORT=4000
+      # Add your environment variables here (copy from .env file)
+      # - SHOPIFY_API_KEY=${SHOPIFY_API_KEY}
+      # - SHOPIFY_API_SECRET=${SHOPIFY_API_SECRET}
+      # - SHOPIFY_APP_URL=${SHOPIFY_APP_URL}
+      # - JENNI_CLIENT_ID=${JENNI_CLIENT_ID}
+      # - JENNI_CLIENT_SECRET=${JENNI_CLIENT_SECRET}
+      # - JENNI_API_HOST=${JENNI_API_HOST}
+      # Note: No REDIS_URL - app will use in-memory cache only
+    volumes:
+      # Mount source code for development (hot reload)
+      - ./src:/app/src:ro
+      - ./examples:/app/examples:ro
+      - ./extensions:/app/extensions:ro
+      - ./functions:/app/functions:ro
+      - ./scripts:/app/scripts:ro
+      - ./tests:/app/tests:ro
+      - ./package.json:/app/package.json:ro
+      - ./tsconfig.json:/app/tsconfig.json:ro
+      # Exclude node_modules to use container's version
+      - /app/node_modules
+    restart: unless-stopped

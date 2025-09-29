@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JENNi Enhanced Logging Test</title>
+    <meta property="og:title" content="Nike Air Max 270 - Black/White">
+    <meta name="product:brand" content="Nike">
+    <meta name="product:sku" content="AH8050-002">
+    <meta name="product:gtin" content="883419639992">
+    <meta name="product:color" content="Black">
+    <meta name="product:size" content="10">
+    
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org/",
+        "@type": "Product",
+        "name": "Nike Air Max 270 - Black/White",
+        "brand": {
+            "@type": "Brand",
+            "name": "Nike"
+        },
+        "sku": "AH8050-002",
+        "gtin13": "883419639992",
+        "color": "Black",
+        "size": "10",
+        "offers": {
+            "@type": "Offer",
+            "price": "150.00",
+            "priceCurrency": "USD"
+        }
+    }
+    </script>
+    
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f7;
+        }
+        .product-card {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            margin: 20px 0;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .product-title {
+            font-size: 24px;
+            font-weight: 600;
+            color: #1d1d1f;
+            margin-bottom: 12px;
+        }
+        .product-meta {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 12px;
+            margin: 16px 0;
+        }
+        .meta-item {
+            background: #f6f6f6;
+            padding: 12px;
+            border-radius: 8px;
+        }
+        .meta-label {
+            font-size: 12px;
+            color: #86868b;
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+        .meta-value {
+            font-size: 16px;
+            color: #1d1d1f;
+            font-weight: 500;
+        }
+        .console-info {
+            background: #e8f4fd;
+            border: 1px solid #b8daff;
+            border-radius: 8px;
+            padding: 16px;
+            margin: 20px 0;
+        }
+        .console-info h3 {
+            margin: 0 0 12px 0;
+            color: #0066cc;
+        }
+        .console-step {
+            margin: 8px 0;
+            padding: 4px 0;
+            border-bottom: 1px solid #d1ecf1;
+        }
+        .test-button {
+            background: linear-gradient(135deg, #007AFF 0%, #5856D6 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin: 8px 8px 8px 0;
+        }
+        .test-button:hover {
+            opacity: 0.9;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔍 JENNi Enhanced Logging Test</h1>
+    
+    <div class="console-info">
+        <h3>📋 Testing Instructions</h3>
+        <div class="console-step">1. Open your browser's Developer Console (F12)</div>
+        <div class="console-step">2. Click "Load JENNi" to initialize the system</div>
+        <div class="console-step">3. Watch the console for detailed logging messages</div>
+        <div class="console-step">4. Click the delivery pill when it appears</div>
+        <div class="console-step">5. Check the store links in the popup</div>
+    </div>
+
+    <div class="product-card">
+        <h2 class="product-title">Nike Air Max 270 - Black/White</h2>
+        
+        <div class="product-meta">
+            <div class="meta-item">
+                <div class="meta-label">SKU</div>
+                <div class="meta-value">AH8050-002</div>
+            </div>
+            <div class="meta-item">
+                <div class="meta-label">GTIN</div>
+                <div class="meta-value">883419639992</div>
+            </div>
+            <div class="meta-item">
+                <div class="meta-label">Brand</div>
+                <div class="meta-value">Nike</div>
+            </div>
+            <div class="meta-item">
+                <div class="meta-label">Color</div>
+                <div class="meta-value">Black</div>
+            </div>
+            <div class="meta-item">
+                <div class="meta-label">Size</div>
+                <div class="meta-value">10</div>
+            </div>
+            <div class="meta-item">
+                <div class="meta-label">Price</div>
+                <div class="meta-value">$150.00</div>
+            </div>
+        </div>
+        
+        <p>This test page contains rich product metadata to test the enhanced fingerprinting and logging system. The product data includes GTIN, SKU, brand, size, color, and price information.</p>
+    </div>
+
+    <div style="text-align: center; margin: 30px 0;">
+        <button class="test-button" onclick="loadJenni()">🚀 Load JENNi</button>
+        <button class="test-button" onclick="clearConsole()">🧹 Clear Console</button>
+        <button class="test-button" onclick="showFingerprint()">🔍 Show Fingerprint</button>
+    </div>
+
+    <div class="console-info">
+        <h3>🎯 What to Look For in Console:</h3>
+        <div class="console-step"><strong>🔍 [JenniEdge] Product Fingerprint:</strong> Shows extracted product data</div>
+        <div class="console-step"><strong>🏪 [JenniEdge] Nearby Stores Found:</strong> Lists discovered stores with details</div>
+        <div class="console-step"><strong>⚖️ [JenniEdge] Decision Summary:</strong> Shows eligibility decision logic</div>
+        <div class="console-step"><strong>[JenniEdge Server]:</strong> Server-side fingerprinting and search logs</div>
+    </div>
+
+    <script>
+        let jenniLoaded = false;
+
+        function clearConsole() {
+            console.clear();
+            console.log('🧹 Console cleared - Ready for JENNi testing');
+        }
+
+        function loadJenni() {
+            if (jenniLoaded) {
+                console.log('⚠️ JENNi already loaded');
+                return;
+            }
+
+            console.log('🚀 Loading JENNi Edge client...');
+            
+            const script = document.createElement('script');
+            script.src = 'http://localhost:4000/edge/client.js';
+            script.defer = true;
+            
+            script.onload = function() {
+                try {
+                    console.log('✅ JENNi script loaded, initializing...');
+                    
+                    window.JenniEdge.init({
+                        tenant: 'demo',
+                        zip: '10001', // NYC for testing
+                        apiBase: 'http://localhost:4000/edge',
+                        debug: true, // Enable detailed logging
+                        autoOpenPanel: false,
+                        keepOpenOnRefresh: true
+                    });
+                    
+                    jenniLoaded = true;
+                    console.log('🎉 JENNi initialized! Watch for the delivery pill...');
+                    
+                } catch (e) {
+                    console.error('❌ JENNi initialization failed:', e);
+                }
+            };
+            
+            script.onerror = function() {
+                console.error('❌ Failed to load JENNi script. Make sure the server is running on http://localhost:4000');
+            };
+            
+            document.head.appendChild(script);
+        }
+
+        function showFingerprint() {
+            if (!window.JenniEdge) {
+                console.log('⚠️ JENNi not loaded yet. Click "Load JENNi" first.');
+                return;
+            }
+
+            const fp = window.JenniEdge.fingerprint();
+            console.log('🔍 Current page fingerprint:', fp);
+        }
+
+        // Auto-load JENNi after page loads
+        window.addEventListener('load', function() {
+            console.log('📄 Test page loaded. Click "Load JENNi" to start testing.');
+            console.log('🎯 This page contains rich product metadata for testing:');
+            console.log('   - Nike Air Max 270 (Brand: Nike)');
+            console.log('   - SKU: AH8050-002');  
+            console.log('   - GTIN: 883419639992');
+            console.log('   - Color: Black, Size: 10');
+            console.log('   - Price: $150.00');
+        });
+    </script>
+</body>
+</html>

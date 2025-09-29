@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JENNi Edge - Refined Checkout Demo</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .demo-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 30px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .demo-title {
+            color: white;
+            text-align: center;
+            font-size: 2.5em;
+            font-weight: 700;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .demo-subtitle {
+            color: rgba(255, 255, 255, 0.8);
+            text-align: center;
+            font-size: 1.2em;
+            margin-bottom: 40px;
+        }
+        
+        .demo-content {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 40px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+        
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+        
+        .feature-card {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            border-left: 4px solid #007AFF;
+        }
+        
+        .feature-title {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+        
+        .feature-description {
+            color: #666;
+            line-height: 1.5;
+        }
+        
+        .demo-info {
+            background: rgba(0, 122, 255, 0.1);
+            border: 1px solid rgba(0, 122, 255, 0.2);
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .test-instructions {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .test-instructions h4 {
+            color: #856404;
+            margin-top: 0;
+        }
+        
+        .test-steps {
+            color: #856404;
+            line-height: 1.6;
+        }
+        
+        .test-steps ol {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="demo-container">
+        <h1 class="demo-title">JENNi Edge Demo</h1>
+        <p class="demo-subtitle">Refined Checkout Experience with Enhanced UX</p>
+        
+        <div class="demo-content">
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-title">📦 Product Information Display</div>
+                    <div class="feature-description">
+                        Prominent product name, brand, and thumbnail with store location and delivery time
+                    </div>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-title">💰 Clear Pricing Structure</div>
+                    <div class="feature-description">
+                        Transparent breakdown: item price, delivery fee, and bold total with no hidden costs
+                    </div>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-title">📱 Responsive No-Scroll Layout</div>
+                    <div class="feature-description">
+                        Two-column desktop layout that stacks on mobile, fits viewport without scrolling
+                    </div>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-title">💳 Multiple Payment Options</div>
+                    <div class="feature-description">
+                        American Express, PayPal, and Visa/Mastercard with proper brand styling
+                    </div>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-title">⚡ Compact Form Design</div>
+                    <div class="feature-description">
+                        Optimized input heights, smart field sizing, and efficient use of space
+                    </div>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-title">🎨 Apple-Inspired Design</div>
+                    <div class="feature-description">
+                        Clean typography, subtle shadows, and smooth animations throughout
+                    </div>
+                </div>
+            </div>
+            
+            <div class="test-instructions">
+                <h4>🧪 How to Test the Refined Checkout</h4>
+                <div class="test-steps">
+                    <ol>
+                        <li>Look for the JENNi pill in the bottom-right corner</li>
+                        <li>Click the pill to open the store selection panel</li>
+                        <li>Click on any store to select it (notice the visual feedback)</li>
+                        <li>Click "Deliver with JENNi" to open the refined checkout modal</li>
+                        <li>Observe the two-column layout with product info on the left</li>
+                        <li>Try different payment methods (Amex, PayPal, Credit Card)</li>
+                        <li>Test form validation by clearing the email field</li>
+                        <li>Complete the order to see the tracking confirmation</li>
+                        <li>Test on mobile by resizing your browser window</li>
+                    </ol>
+                </div>
+            </div>
+            
+            <div class="demo-info">
+                <strong>🔧 Technical Improvements:</strong><br>
+                • Modular component architecture with fallback support<br>
+                • CSS Grid for responsive layout with mobile-first breakpoints<br>
+                • Dynamic height calculation to prevent viewport overflow<br>
+                • Enhanced form validation with real-time feedback<br>
+                • Payment method state management with visual selection<br>
+                • Optimized for performance and accessibility
+            </div>
+        </div>
+    </div>
+
+    <!-- Load Components -->
+    <script src="../../src/components/AddressGenerator.js"></script>
+    <script src="../../src/components/FormValidators.js"></script>
+    <script src="../../src/components/StoreSelector.js"></script>
+    <script src="../../src/components/CheckoutModal.js"></script>
+    <script src="../../src/components/ComponentLoader.js"></script>
+    
+    <!-- Load Main Edge Script -->
+    <script src="edge.js"></script>
+    
+    <script>
+        // Initialize JENNi Edge with refined checkout
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                await JenniEdge.init({
+                    debug: true,
+                    forceMock: true,
+                    autoOpenPanel: false,
+                    zip: '60612',
+                    position: 'bottom-right'
+                });
+                
+                console.log('✅ JENNi Edge initialized with refined checkout modal');
+                console.log('📦 Product info display: Enabled');
+                console.log('💰 Pricing breakdown: Enabled');
+                console.log('📱 Responsive layout: Enabled');
+                console.log('💳 Multiple payment options: Enabled');
+                
+            } catch (error) {
+                console.error('❌ JENNi Edge initialization failed:', error);
+            }
+        });
+        
+        // Add some demo interaction logging
+        window.addEventListener('click', (e) => {
+            if (e.target.closest('.jenni-edge-pill')) {
+                console.log('🔵 JENNi pill clicked - opening store panel');
+            }
+            
+            if (e.target.closest('.jenni-edge-node')) {
+                console.log('🏪 Store selected - enabling checkout');
+            }
+            
+            if (e.target.closest('.jenni-edge-cta')) {
+                console.log('🛒 Checkout initiated - opening refined modal');
+            }
+            
+            if (e.target.closest('.jenni-payment-option')) {
+                const paymentType = e.target.closest('.jenni-payment-option').dataset.payment;
+                console.log(`💳 Payment method selected: ${paymentType}`);
+            }
+        });
+    </script>
+</body>
+</html>

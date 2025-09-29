@@ -1,3 +1,4 @@
+
 # Node
 node_modules/
 npm-debug.log*
@@ -16,6 +17,7 @@ pnpm-debug.log*
 logs/
 build.out
 tmp/
+.history/
 
 # Stray artifacts
 /tsc

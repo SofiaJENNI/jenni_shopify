@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JENNi Edge - IP ZIP Detection Test</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            margin: 0;
+            color: #1f2937;
+            font-size: 28px;
+        }
+        
+        .header p {
+            margin: 10px 0 0;
+            color: #6b7280;
+        }
+        
+        .test-section {
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .test-section h3 {
+            margin: 0 0 15px;
+            color: #374151;
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            margin: 5px 0;
+        }
+        
+        .status-loading {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        
+        .status-success {
+            background: #d1fae5;
+            color: #047857;
+        }
+        
+        .status-error {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+        
+        .zip-display {
+            font-size: 24px;
+            font-weight: 700;
+            color: #1f2937;
+            text-align: center;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            margin: 15px 0;
+            border: 2px dashed #e5e7eb;
+        }
+        
+        .zip-display.detected {
+            border-color: #10b981;
+            color: #047857;
+        }
+        
+        .console-output {
+            background: #1f2937;
+            color: #f9fafb;
+            border-radius: 8px;
+            padding: 15px;
+            font-family: 'Monaco', 'Consolas', monospace;
+            font-size: 13px;
+            max-height: 300px;
+            overflow-y: auto;
+            margin: 15px 0;
+        }
+        
+        .button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            margin: 8px;
+            transition: all 0.2s ease;
+        }
+        
+        .button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+        
+        .button:disabled {
+            background: #d1d5db;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🌐 IP-Based ZIP Detection Test</h1>
+            <p>Testing automatic ZIP code detection using IP geolocation</p>
+        </div>
+
+        <div class="test-section">
+            <h3>📍 ZIP Detection Status</h3>
+            <div id="detection-status" class="status-indicator status-loading">
+                Initializing...
+            </div>
+            
+            <div id="zip-display" class="zip-display">
+                --ZIP--
+            </div>
+            
+            <div>
+                <button id="test-detection" class="button">Test IP Detection</button>
+                <button id="clear-storage" class="button">Clear Stored ZIP</button>
+                <button id="test-jenni" class="button" disabled>Test JENNi Widget</button>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h3>🧪 Test Console</h3>
+            <div id="console-output" class="console-output">
+                <div>🚀 ZIP Detection Test Console</div>
+                <div>Ready for testing...</div>
+            </div>
+            <button id="clear-console" class="button">Clear Console</button>
+        </div>
+
+        <div class="test-section">
+            <h3>📦 Product Demo (Nike Shoes)</h3>
+            <p>This simulates a product page where JENNi would automatically detect the ZIP and show delivery options.</p>
+            <div style="padding: 20px; background: white; border-radius: 8px; margin: 15px 0;">
+                <h4>Nike Air Max 270</h4>
+                <p><strong>Price:</strong> $150.00</p>
+                <p><strong>GTIN:</strong> 009328295433</p>
+                <!-- JENNi widget will appear here -->
+            </div>
+        </div>
+    </div>
+
+    <script src="./edge.js"></script>
+    <script>
+        // Console logging
+        const consoleOutput = document.getElementById('console-output');
+        const zipDisplay = document.getElementById('zip-display');
+        const statusIndicator = document.getElementById('detection-status');
+        
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const line = document.createElement('div');
+            line.style.color = type === 'error' ? '#ef4444' : type === 'success' ? '#10b981' : '#e5e7eb';
+            line.textContent = `[${timestamp}] ${message}`;
+            consoleOutput.appendChild(line);
+            consoleOutput.scrollTop = consoleOutput.scrollHeight;
+        }
+
+        function updateStatus(message, type) {
+            statusIndicator.textContent = message;
+            statusIndicator.className = `status-indicator status-${type}`;
+        }
+
+        function updateZipDisplay(zip) {
+            zipDisplay.textContent = zip || '--ZIP--';
+            zipDisplay.className = zip ? 'zip-display detected' : 'zip-display';
+        }
+
+        // Test functions
+        async function testIPDetection() {
+            log('🌐 Testing IP-based ZIP detection...', 'info');
+            updateStatus('Detecting...', 'loading');
+            
+            try {
+                const zip = await window.JenniEdge.detectZipByIP();
+                log(`✅ ZIP detected: ${zip}`, 'success');
+                updateZipDisplay(zip);
+                updateStatus(`Detected: ${zip}`, 'success');
+                document.getElementById('test-jenni').disabled = false;
+            } catch (error) {
+                log(`❌ Detection failed: ${error.message}`, 'error');
+                updateStatus('Detection failed', 'error');
+            }
+        }
+
+        function clearStorage() {
+            localStorage.removeItem('jenni_zip_preference');
+            log('🗑️ Cleared stored ZIP preference', 'info');
+            updateZipDisplay(null);
+            updateStatus('Storage cleared', 'loading');
+        }
+
+        async function testJenniWidget() {
+            log('🚀 Initializing JENNi widget...', 'info');
+            
+            try {
+                await window.JenniEdge.init({ 
+                    tenant: 'demo',
+                    debug: true,
+                    autoOpenPanel: false
+                });
+                
+                log(`✅ JENNi initialized with ZIP: ${window.JenniEdge.config.zip}`, 'success');
+                updateStatus(`JENNi ready (${window.JenniEdge.config.zip})`, 'success');
+            } catch (error) {
+                log(`❌ JENNi initialization failed: ${error.message}`, 'error');
+                updateStatus('JENNi failed', 'error');
+            }
+        }
+
+        function clearConsole() {
+            consoleOutput.innerHTML = '<div>🚀 ZIP Detection Test Console</div><div>Console cleared...</div>';
+        }
+
+        // Event listeners
+        document.getElementById('test-detection').addEventListener('click', testIPDetection);
+        document.getElementById('clear-storage').addEventListener('click', clearStorage);
+        document.getElementById('test-jenni').addEventListener('click', testJenniWidget);
+        document.getElementById('clear-console').addEventListener('click', clearConsole);
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', async function() {
+            log('🚀 Page loaded, testing IP detection...', 'info');
+            
+            // Test detection immediately
+            await testIPDetection();
+            
+            log('💡 Use the buttons above to test different scenarios', 'info');
+        });
+    </script>
+</body>
+</html>

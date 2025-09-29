@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JENNi Panel Test - Nike Air Force 1</title>
+    
+    <!-- Rich product metadata for testing -->
+    <meta property="og:title" content="Nike Air Force 1 '07 White">
+    <meta property="product:brand" content="Nike">
+    <meta property="product:price:amount" content="90.00">
+    <meta name="product:sku" content="315122-111">
+    <meta name="product:upc" content="887229084031">
+    
+    <!-- Schema.org JSON-LD -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org/",
+      "@type": "Product",
+      "name": "Nike Air Force 1 '07 White",
+      "brand": {
+        "@type": "Brand",
+        "name": "Nike"
+      },
+      "sku": "315122-111",
+      "gtin13": "0887229084031",
+      "offers": {
+        "@type": "Offer",
+        "price": "90.00",
+        "priceCurrency": "USD",
+        "availability": "https://schema.org/InStock"
+      }
+    }
+    </script>
+    
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+        .test-header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f8fafc;
+            border-radius: 8px;
+            border-left: 4px solid #3b82f6;
+        }
+        .test-header h1 {
+            margin: 0;
+            color: #1f2937;
+        }
+        .test-header p {
+            margin: 10px 0 0 0;
+            color: #6b7280;
+        }
+        .product-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin: 30px 0;
+        }
+        .product-image {
+            background: #f3f4f6;
+            border-radius: 8px;
+            height: 300px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #6b7280;
+            font-size: 18px;
+        }
+        .product-details h2 {
+            margin: 0 0 10px 0;
+            color: #1f2937;
+        }
+        .product-brand {
+            color: #6b7280;
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+        .price {
+            font-size: 32px;
+            font-weight: 700;
+            color: #059669;
+            margin: 15px 0;
+        }
+        .metadata-table {
+            margin: 20px 0;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .metadata-table tr:nth-child(even) {
+            background: #f9fafb;
+        }
+        .metadata-table td {
+            padding: 12px 16px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .metadata-table td:first-child {
+            font-weight: 600;
+            color: #374151;
+            width: 120px;
+        }
+        .metadata-table td:last-child {
+            font-family: 'Monaco', 'Consolas', monospace;
+            font-size: 13px;
+            color: #1f2937;
+        }
+        .test-instructions {
+            background: #ecfdf5;
+            border: 1px solid #10b981;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 30px 0;
+        }
+        .test-instructions h3 {
+            margin: 0 0 10px 0;
+            color: #047857;
+        }
+        .test-instructions ol {
+            margin: 0;
+            padding-left: 20px;
+        }
+        .test-instructions li {
+            margin: 5px 0;
+            color: #065f46;
+        }
+        .status-indicator {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+        .status-loading {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        .status-ready {
+            background: #d1fae5;
+            color: #047857;
+        }
+        .debug-console {
+            background: #1f2937;
+            color: #f9fafb;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 20px 0;
+            font-family: 'Monaco', 'Consolas', monospace;
+            font-size: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="test-header">
+            <h1>🧪 JENNi Panel & Fingerprint Test</h1>
+            <p>Testing delivery panel (fingerprinting now server-side)</p>
+            <div id="jenni-status">
+                <span class="status-indicator status-loading">Loading JENNi...</span>
+            </div>
+        </div>
+        
+        <div class="product-info">
+            <div class="product-image">
+                Product Image<br>Nike Air Force 1
+            </div>
+            <div class="product-details">
+                <div class="product-brand" itemprop="brand">Nike</div>
+                <h2 itemprop="name">Air Force 1 '07 White</h2>
+                <div class="price" itemprop="price" data-price="90.00">$90.00</div>
+                
+                <table class="metadata-table">
+                    <tr>
+                        <td>SKU:</td>
+                        <td class="sku" itemprop="sku" data-sku="315122-111">315122-111</td>
+                    </tr>
+                    <tr>
+                        <td>UPC:</td>
+                        <td class="barcode" data-gtin="0887229084031">0887229084031</td>
+                    </tr>
+                    <tr>
+                        <td>Style Code:</td>
+                        <td data-style="315122-111">315122-111</td>
+                    </tr>
+                </table>
+                
+                <!-- Variant selectors for testing -->
+                <div style="margin: 20px 0;">
+                    <label style="display: block; margin-bottom: 8px; font-weight: 600;">Size:</label>
+                    <select name="size" style="padding: 8px; border: 1px solid #e5e7eb; border-radius: 4px;">
+                        <option value="8">8</option>
+                        <option value="9" selected>9</option>
+                        <option value="10">10</option>
+                        <option value="11">11</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        
+        <div class="test-instructions">
+            <h3>✅ Test Steps:</h3>
+            <ol>
+                <li>Wait for JENNi to load (pill should appear in bottom-right)</li>
+                <li>Click the delivery pill to open the panel</li>
+                <li>View delivery options and profit calculations</li>
+                <li>Product data (GTIN, SKU, brand, price) now extracted server-side</li>
+                <li>Change the size dropdown (variant detection now server-side)</li>
+                <li>Check console for debug messages</li>
+            </ol>
+        </div>
+        
+        <div class="debug-console" id="debug-console">
+            <div>Debug Console:</div>
+        </div>
+    </div>
+    
+    <script>
+        // Debug console logger
+        const debugConsole = document.getElementById('debug-console');
+        const originalLog = console.log;
+        const originalError = console.error;
+        
+        function addToDebugConsole(message, type = 'log') {
+            const timestamp = new Date().toLocaleTimeString();
+            const div = document.createElement('div');
+            div.style.color = type === 'error' ? '#ef4444' : '#10b981';
+            div.textContent = `[${timestamp}] ${message}`;
+            debugConsole.appendChild(div);
+            debugConsole.scrollTop = debugConsole.scrollHeight;
+        }
+        
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            addToDebugConsole(args.join(' '), 'log');
+        };
+        
+        console.error = function(...args) {
+            originalError.apply(console, args);
+            addToDebugConsole(args.join(' '), 'error');
+        };
+        
+        // Status updater
+        function updateStatus(message, type = 'loading') {
+            const statusEl = document.getElementById('jenni-status');
+            statusEl.innerHTML = `<span class="status-indicator status-${type}">${message}</span>`;
+        }
+        
+        // Load JENNi Edge
+        console.log('🚀 Loading JENNi Edge...');
+        
+        // Auto-detect if running locally
+        const apiBase = location.hostname === 'localhost' || location.hostname === '127.0.0.1' 
+            ? 'http://localhost:4000/edge' 
+            : 'https://your-tunnel-url.ngrok.io/edge';
+        
+        const script = document.createElement('script');
+        script.src = apiBase.replace('/edge', '') + '/edge/client.js';
+        script.async = true;
+        
+        script.onload = function() {
+            console.log('✅ JENNi script loaded');
+            updateStatus('Initializing...', 'loading');
+            
+            try {
+                window.JenniEdge.init({
+                    tenant: 'demo',
+                    apiBase: apiBase,
+                    debug: true,
+                    autoOpenPanel: false, // Let user click pill
+                    keepOpenOnRefresh: true
+                }).then(() => {
+                    console.log('✅ JENNi initialized with ZIP:', window.JenniEdge.config.zip);
+                    updateStatus('Ready! Click the delivery pill', 'ready');
+                }).catch((e) => {
+                    console.error('❌ JENNi init failed:', e);
+                    updateStatus('Init failed', 'loading');
+                });
+                
+                // Monitor for panel opening
+                setTimeout(() => {
+                    if (window.JenniEdge.state.panelOpen) {
+                        console.log('🎉 Panel is open! Product data extracted server-side.');
+                    } else {
+                        console.log('💡 Click the delivery pill to open the panel.');
+                    }
+                }, 2000);
+                
+            } catch (e) {
+                console.error('❌ JENNi init failed:', e);
+                updateStatus('Init failed', 'loading');
+            }
+        };
+        
+        script.onerror = function() {
+            console.error('❌ Failed to load JENNi script from:', script.src);
+            updateStatus('Script load failed', 'loading');
+        };
+        
+        document.head.appendChild(script);
+        
+        // Size selector change detection
+        document.querySelector('select[name="size"]').addEventListener('change', function() {
+            console.log('📦 Size changed to:', this.value);
+            // Trigger JENNi refresh if loaded
+            if (window.JenniEdge && window.JenniEdge.run) {
+                setTimeout(() => {
+                    console.log('🔄 Refreshing JENNi due to variant change...');
+                    window.JenniEdge.run();
+                }, 100);
+            }
+        });
+        
+        console.log('🧪 Test page loaded. API base:', apiBase);
+    </script>
+</body>
+</html>
